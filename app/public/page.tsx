@@ -1,7 +1,5 @@
-"use client"
-
-import { PublicDashboard } from "@/components/dashboard/public-dashboard"
+import { redirect } from "next/navigation"
 
 export default function PublicPage() {
-    return <PublicDashboard />
+    redirect("/")
 }
