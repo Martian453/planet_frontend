@@ -16,6 +16,32 @@ import { useAuth } from "@/components/auth-provider"
 import { getApiUrl } from "@/lib/api-url"
 import { Download, Wifi, WifiOff, Cpu, MapPin, Trash2 } from "lucide-react"
 
+type AirState = {
+    pm25: number; pm10: number; co: number; no2: number; o3: number; so2: number;
+    chartData: { labels: string[], pm25: number[], pm10: number[], co: number[], no2: number[], o3: number[], so2: number[] }
+};
+
+type WaterState = {
+    level: number; ph: number; tds: number; irms: number; pump_status: string;
+    chartData: { labels: string[], level: number[], ph: number[], tds: number[] }
+};
+
+function clamp(n: number, min: number, max: number) {
+    return Math.max(min, Math.min(max, n));
+}
+
+function rand(min: number, max: number) {
+    return min + Math.random() * (max - min);
+}
+
+function nextRandomWalk(prev: number, delta: number, min: number, max: number) {
+    return clamp(prev + rand(-delta, delta), min, max);
+}
+
+function timeLabelNow() {
+    return new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+}
+
 // Dynamically import Leaflet map
 const LeafletMapCard = dynamic(
     () => import("@/components/leaflet-map-card").then((mod) => mod.LeafletMapCard),
@@ -29,6 +55,7 @@ const ChoroplethMapCard = dynamic(
 
 export function PrivateDashboard() {
     const { token, user } = useAuth();
+    const demoMode = (!token) || (process.env.NEXT_PUBLIC_DEMO_MODE === "true");
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
     const [isSidebarOpen, setIsSidebarOpen] = useState(false)
     const [maxWaterLevel, setMaxWaterLevel] = useState(0)
@@ -79,15 +106,9 @@ export function PrivateDashboard() {
     if (!isAirOffline && !isWaterOffline) locationStatus = "ONLINE";
     else if (!isAirOffline || !isWaterOffline) locationStatus = "PARTIAL";
 
-    const [airData, setAirData] = useState<{
-        pm25: number; pm10: number; co: number; no2: number; o3: number; so2: number;
-        chartData: { labels: string[], pm25: number[], pm10: number[], co: number[], no2: number[], o3: number[], so2: number[] }
-    } | null>(null);
+    const [airData, setAirData] = useState<AirState | null>(null);
 
-    const [waterData, setWaterData] = useState<{
-        level: number; ph: number; tds: number; irms: number; pump_status: string;
-        chartData: { labels: string[], level: number[], ph: number[], tds: number[] }
-    } | null>(null);
+    const [waterData, setWaterData] = useState<WaterState | null>(null);
 
     // --- ONLINE DETECTION (POLLING /api/locations/status) ---
     const [isSystemOnline, setIsSystemOnline] = useState(false);
@@ -96,6 +117,7 @@ export function PrivateDashboard() {
     // API URL helper from shared utility
 
     useEffect(() => {
+        if (demoMode) return;
         if (!token) return;
 
         const checkStatus = async () => {
@@ -161,10 +183,14 @@ export function PrivateDashboard() {
         checkStatus();
 
         return () => clearInterval(interval);
-    }, [token, currentLocation]);
+    }, [token, currentLocation, demoMode]);
 
     // SYSTEM STATUS: Driven by CLIENT SIDE HOOK (Priority) + Polling fallback
     useEffect(() => {
+        if (demoMode) {
+            setIsSystemOnline(true);
+            return;
+        }
         // If WebSocket hook says we are LIVE, we are definitely online.
         if (isLive && !wsOffline) {
             setIsSystemOnline(true);
@@ -174,11 +200,12 @@ export function PrivateDashboard() {
             // If polling says online, we trust it (maybe using HTTP ingest)
             setIsSystemOnline(locStatus?.online || false);
         }
-    }, [isLive, wsOffline, locationsStatus, currentLocation]);
+    }, [isLive, wsOffline, locationsStatus, currentLocation, demoMode]);
 
 
     // 1. Fetch Locations on Mount (Auth)
     useEffect(() => {
+        if (demoMode) return;
         if (!token) return;
 
         fetch(getApiUrl("/api/locations"), {
@@ -193,7 +220,7 @@ export function PrivateDashboard() {
                 }
             })
             .catch(err => console.error("Failed to fetch locations:", err));
-    }, [token]);
+    }, [token, demoMode]);
 
     // 2. Clear State on Location Switch
     const handleLocationSelect = (locName: string) => {
@@ -234,6 +261,7 @@ export function PrivateDashboard() {
 
     // 3. Fetch Devices... (Existing)
     const fetchDevices = () => {
+        if (demoMode) return;
         if (token) {
             fetch(getApiUrl("/api/devices"), {
                 headers: { "Authorization": `Bearer ${token}` }
@@ -246,16 +274,20 @@ export function PrivateDashboard() {
 
     useEffect(() => {
         fetchDevices(); // Always fetch on mount for sensor status display
-    }, [token]);
+    }, [token, demoMode]);
 
     useEffect(() => {
         if (activeView === "devices") {
             fetchDevices();
         }
-    }, [activeView, token]);
+    }, [activeView, token, demoMode]);
 
     const handleDeleteDevice = async (deviceId: string, e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent card click
+        if (demoMode) {
+            setMyDevices(prev => prev.filter(d => d.device_id !== deviceId));
+            return;
+        }
         if (!confirm(`Are you sure you want to delete device ${deviceId}? This action cannot be undone.`)) return;
 
         try {
@@ -278,6 +310,7 @@ export function PrivateDashboard() {
 
     // 4. Update State... (Existing)
     useEffect(() => {
+        if (demoMode) return;
         if (wsData && (wsData.type === 'aqi' || wsData.type === 'aqi_camera')) {
             setAirData(prev => {
                 const currentChart = prev?.chartData || { labels: [], pm25: [], pm10: [], co: [], no2: [], o3: [], so2: [] };
@@ -382,7 +415,153 @@ export function PrivateDashboard() {
                 }
             });
         }
-    }, [wsData]);
+    }, [wsData, demoMode]);
+
+    // 5. DEMO MODE: generate realistic random data so UI is functional without backend
+    useEffect(() => {
+        if (!demoMode) return;
+
+        // Seed locations/devices once
+        const demoLocs = [
+            { location_id: "BLR-01", name: "BLR-01", latitude: 12.9716, longitude: 77.5946, online: true, last_seen: new Date().toISOString() },
+            { location_id: "BLR-02", name: "BLR-02", latitude: 12.9352, longitude: 77.6245, online: true, last_seen: new Date().toISOString() },
+            { location_id: "BLR-03", name: "BLR-03", latitude: 13.0358, longitude: 77.5970, online: true, last_seen: new Date().toISOString() },
+        ];
+
+        setCapabilities({ has_aqi: true, has_water: true });
+        setIsSystemOnline(true);
+
+        setLocationsStatus(() => {
+            const m: Record<string, any> = {};
+            for (const l of demoLocs) m[l.location_id] = l;
+            return m;
+        });
+
+        setMyDevices([
+            { device_id: "AQI-CAM-01", type: "aqi_camera", status: "ONLINE", location_id: "BLR-01", location_name: "BLR-01", last_seen: new Date().toISOString() },
+            { device_id: "AIR-SENS-02", type: "aqi", status: "ONLINE", location_id: "BLR-02", location_name: "BLR-02", last_seen: new Date().toISOString() },
+            { device_id: "WATER-01", type: "water_sensor", status: "ONLINE", location_id: "BLR-01", location_name: "BLR-01", last_seen: new Date().toISOString() },
+            { device_id: "PUMP-01", type: "pump_monitor", status: "ONLINE", location_id: "BLR-03", location_name: "BLR-03", last_seen: new Date().toISOString() },
+        ]);
+
+        if (!currentLocation) {
+            setCurrentLocation("BLR-01");
+        }
+
+        // Initialize baseline values if missing
+        setAirData(prev => prev ?? ({
+            pm25: rand(8, 65),
+            pm10: rand(15, 120),
+            co: rand(150, 1100),   // ppb-ish in your UI
+            no2: rand(5, 55),
+            o3: rand(5, 60),
+            so2: rand(1, 25),
+            chartData: { labels: [], pm25: [], pm10: [], co: [], no2: [], o3: [], so2: [] }
+        }));
+
+        setWaterData(prev => prev ?? ({
+            level: rand(2, 12),
+            ph: rand(6.8, 8.2),
+            tds: rand(180, 800),
+            irms: rand(0.5, 9),
+            pump_status: "MID",
+            chartData: { labels: [], level: [], ph: [], tds: [] }
+        }));
+
+        const tick = () => {
+            const label = timeLabelNow();
+
+            setAirData(prev => {
+                const p = prev ?? ({
+                    pm25: 25, pm10: 55, co: 450, no2: 18, o3: 22, so2: 8,
+                    chartData: { labels: [], pm25: [], pm10: [], co: [], no2: [], o3: [], so2: [] }
+                });
+
+                // Smooth random walk + occasional spikes
+                const spike = Math.random() < 0.08;
+                const pm25 = clamp(nextRandomWalk(p.pm25, spike ? 18 : 6, 0, 250), 0, 250);
+                const pm10 = clamp(nextRandomWalk(p.pm10, spike ? 30 : 10, 0, 400), 0, 400);
+                const co = clamp(nextRandomWalk(p.co, spike ? 220 : 90, 50, 5000), 50, 5000);
+                const no2 = clamp(nextRandomWalk(p.no2, spike ? 18 : 6, 0, 200), 0, 200);
+                const o3 = clamp(nextRandomWalk(p.o3, 6, 0, 200), 0, 200);
+                const so2 = clamp(nextRandomWalk(p.so2, 3, 0, 100), 0, 100);
+
+                const c = p.chartData ?? { labels: [], pm25: [], pm10: [], co: [], no2: [], o3: [], so2: [] };
+                const newLabels = [...c.labels, label].slice(-100);
+
+                setLastAirTime(Date.now());
+
+                return {
+                    pm25, pm10, co, no2, o3, so2,
+                    chartData: {
+                        labels: newLabels,
+                        pm25: [...c.pm25, pm25].slice(-100),
+                        pm10: [...c.pm10, pm10].slice(-100),
+                        co: [...c.co, co].slice(-100),
+                        no2: [...c.no2, no2].slice(-100),
+                        o3: [...(c.o3 || []), o3].slice(-100),
+                        so2: [...(c.so2 || []), so2].slice(-100),
+                    }
+                };
+            });
+
+            setWaterData(prev => {
+                const p = prev ?? ({
+                    level: 6.5, ph: 7.4, tds: 420, irms: 3.2, pump_status: "MID",
+                    chartData: { labels: [], level: [], ph: [], tds: [] }
+                });
+
+                // Level wiggle (ft), ph small drift, tds moderate drift, irms tied to pump activity
+                const level = clamp(nextRandomWalk(p.level, 0.35, 0, 16), 0, 16);
+                const ph = clamp(nextRandomWalk(p.ph, 0.06, 6.2, 8.8), 6.2, 8.8);
+                const tds = clamp(nextRandomWalk(p.tds, 25, 50, 1800), 50, 1800);
+
+                // Pump current follows level bands a bit
+                const baseIrms = level < 2 ? rand(0.2, 1.0) : level < 4 ? rand(1.0, 2.5) : level < 7 ? rand(2.5, 4.5) : rand(4.0, 8.5);
+                const irms = clamp(nextRandomWalk(baseIrms, 0.6, 0, 15), 0, 15);
+
+                let pump_status: string;
+                if (irms < 2) pump_status = "OFF";
+                else if (irms < 4) pump_status = "LOW";
+                else if (irms < 7) pump_status = "MID";
+                else if (irms < 12) pump_status = "HIGH";
+                else pump_status = "CRITICAL";
+
+                setWaterStatus(pump_status);
+                setLastWaterTime(Date.now());
+
+                const c = p.chartData ?? { labels: [], level: [], ph: [], tds: [] };
+                const newLabels = [...c.labels, label].slice(-100);
+
+                return {
+                    level, ph, tds, irms, pump_status,
+                    chartData: {
+                        labels: newLabels,
+                        level: [...c.level, level].slice(-100),
+                        ph: [...c.ph, ph].slice(-100),
+                        tds: [...c.tds, tds].slice(-100),
+                    }
+                };
+            });
+
+            // Update location last_seen so map popups look alive
+            setLocationsStatus(prev => {
+                const updated: Record<string, any> = { ...prev };
+                for (const [k, v] of Object.entries(updated)) {
+                    updated[k] = { ...v, online: true, last_seen: new Date().toISOString() };
+                }
+                return updated;
+            });
+        };
+
+        // Faster than real-time, but looks great for demos
+        const interval = setInterval(tick, 2000);
+        // Prime a few points quickly so charts are not empty
+        tick();
+        tick();
+
+        return () => clearInterval(interval);
+    }, [demoMode, currentLocation]);
 
     // Visual Effects... (Existing)
     const [stars, setStars] = useState<Array<{ left: string; top: string; delay: string; duration: string }>>([])
