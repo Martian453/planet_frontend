@@ -70,18 +70,12 @@ export function PollutantDonutChart({ airData }: PollutantDonutChartProps) {
 
             <div className="flex items-center justify-between mb-2 relative z-10">
                 <div>
-                    <h3 className="text-xs font-semibold uppercase tracking-widest text-cyan-400">
+                    <h3 className="text-[14px] font-semibold uppercase tracking-widest text-cyan-400">
                         Cause Analysis
                     </h3>
-                    <p className="text-[10px] text-slate-400">AQI Contribution</p>
+                    <p className="text-[11px] text-slate-400">AQI Contribution</p>
                 </div>
-                {/* Animated Alert Dot if data exists */}
-                {airData && (
-                    <div className="relative">
-                        <div className="absolute -inset-1 animate-pulse rounded-full bg-red-500/20 blur-sm" />
-                        <div className={`h-2 w-2 rounded-full ${data[0]?.value > 50 ? 'bg-orange-500' : 'bg-emerald-500'}`} />
-                    </div>
-                )}
+
             </div>
 
             <div className="flex-1 w-full relative min-h-[120px] z-10">
@@ -93,9 +87,9 @@ export function PollutantDonutChart({ airData }: PollutantDonutChartProps) {
                     <span className="text-[10px] uppercase font-bold tracking-wider" style={{ color: activeItem.color }}>
                         {activeItem.name}
                     </span>
-                    <span className="text-[8px] text-slate-500">Sub-Index</span>
+                    <span className="text-[9px] text-bold-slate-500">Sub-Index</span>
                     {activeItem.rawValue !== undefined && (
-                        <span className="text-[9px] text-cyan-400 mt-1">
+                        <span className="absolute right-7 bottom-6 text-[15px] text-cyan-400">
                             (from {activeItem.rawValue?.toFixed(1)} {activeItem.unit})
                         </span>
                     )}
@@ -105,8 +99,8 @@ export function PollutantDonutChart({ airData }: PollutantDonutChartProps) {
                     <PieChart>
                         <Pie
                             data={data}
-                            innerRadius={40}
-                            outerRadius={55}
+                            innerRadius={45}
+                            outerRadius={60}
                             paddingAngle={4}
                             dataKey="value"
                             onMouseEnter={onPieEnter}
@@ -142,7 +136,7 @@ export function PollutantDonutChart({ airData }: PollutantDonutChartProps) {
                         onMouseEnter={() => setActiveIndex(index)}
                     >
                         <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: entry.color, boxShadow: `0 0 5px ${entry.color}` }} />
-                        <span className={`text-[9px] font-medium ${index === activeIndex ? "text-white" : "text-slate-400"}`}>
+                        <span className={`text-[12px] font-medium ${index === activeIndex ? "text-white" : "text-slate-400"}`}>
                             {entry.name}
                         </span>
                     </div>

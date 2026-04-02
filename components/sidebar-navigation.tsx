@@ -90,26 +90,7 @@ export function SidebarNavigation({ isOpen, onToggle, activeView, onNavigate }: 
 
   return (
     <>
-      <button
-        onClick={onToggle}
-        className="fixed left-2 top-6 z-[200] flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-slate-900/90 shadow-xl backdrop-blur-md transition-all duration-300 hover:border-emerald-500/30 hover:bg-slate-800/90 dark:border-white/10 dark:bg-slate-900/90"
-        aria-label="Toggle menu"
-      >
-        <div className="relative h-5 w-5">
-          <span
-            className={`absolute left-0 top-0 h-0.5 w-5 rounded-full bg-emerald-400 transition-all duration-300 ${isOpen ? "top-2.5 rotate-45" : ""
-              }`}
-          />
-          <span
-            className={`absolute left-0 top-2 h-0.5 w-5 rounded-full bg-emerald-400 transition-all duration-300 ${isOpen ? "opacity-0" : ""
-              }`}
-          />
-          <span
-            className={`absolute left-0 top-4 h-0.5 w-5 rounded-full bg-emerald-400 transition-all duration-300 ${isOpen ? "top-2.5 -rotate-45" : ""
-              }`}
-          />
-        </div>
-      </button>
+
 
       {/* Backdrop Overlay */}
       <div

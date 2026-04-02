@@ -14,7 +14,7 @@ import { useRealtimeData } from "@/hooks/useRealtimeData"
 import { useAuth } from "@/components/auth-provider"
 import { getApiUrl } from "@/lib/api-url"
 import { buildHistoricalReadingsSeries, type HistoricalPeriod } from "@/lib/historical-readings"
-import { Wifi, WifiOff, Cpu, MapPin, Trash2 } from "lucide-react"
+import { Wifi, WifiOff, Cpu, MapPin, Trash2, Menu } from "lucide-react"
 
 type AirState = {
     pm25: number; pm10: number; co: number; no2: number; o3: number; so2: number;
@@ -661,7 +661,7 @@ export function PrivateDashboard() {
         <div className={`relative min-h-screen overflow-hidden transition-all duration-1000 ${isSystemOnline ? 'bg-[#050511]' : 'bg-[radial-gradient(circle_at_center,_#0b2a44,_#061a2b)]'}`}>
             {/* Offline Banner */}
             {activeView === "dashboard" && (
-                <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-pulse transition-all duration-500">
+                <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-pulse transition-all duration-500">
                     <div className={`px-4 py-1 rounded-full text-xs font-bold tracking-widest backdrop-blur-md shadow-lg border ${locationStatus === "ONLINE" ? "bg-emerald-500/90 text-white border-emerald-400/50 shadow-[0_0_20px_rgba(16,185,129,0.5)]" :
                         locationStatus === "PARTIAL" ? "bg-amber-500/90 text-white border-amber-400/50 shadow-[0_0_20px_rgba(245,158,11,0.5)]" :
                             "bg-red-500/90 text-white border-red-400/50 shadow-[0_0_20px_rgba(239,68,68,0.5)]"
@@ -703,17 +703,28 @@ export function PrivateDashboard() {
                     {/* Header - Compact */}
                     <header className="flex items-center justify-between border-b border-white/5 px-4 py-2 backdrop-blur-sm">
                         <div className="flex items-center gap-2">
-                            <div className="relative">
-                                <div className={`relative h-8 w-8 flex items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 border border-white/5`}>
-                                    <div className="h-3 w-3 rounded-full bg-emerald-400/80 shadow-[0_0_15px_rgba(52,211,153,0.5)]" />
+                            <button
+                                onClick={() => setIsSidebarOpen((v) => !v)}
+                                className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-transparent bg-transparent transition-all duration-300 hover:bg-white/10"
+                                aria-label="Toggle menu"
+                            >
+                                <div className="relative h-5 w-5">
+                                    <span
+                                        className={`absolute left-0 top-0 h-0.5 w-5 rounded-full bg-emerald-400 transition-all duration-300 ${isSidebarOpen ? "top-2.5 rotate-45" : ""
+                                            }`}
+                                    />
+                                    <span
+                                        className={`absolute left-0 top-2 h-0.5 w-5 rounded-full bg-emerald-400 transition-all duration-300 ${isSidebarOpen ? "opacity-0" : ""
+                                            }`}
+                                    />
+                                    <span
+                                        className={`absolute left-0 top-4 h-0.5 w-5 rounded-full bg-emerald-400 transition-all duration-300 ${isSidebarOpen ? "top-2.5 -rotate-45" : ""
+                                            }`}
+                                    />
                                 </div>
-                            </div>
+                            </button>
                             <div>
-                                <h1 className="text-lg font-bold tracking-wide" style={{ fontFamily: 'var(--font-space-grotesk)' }}>
-                                    <span className="bg-gradient-to-r from-cyan-400 to-[#7CFF9A] bg-clip-text text-transparent">
-                                        Air & Groundwater Intelligence
-                                    </span>
-                                </h1>
+                                <img src="/logo.png" alt="Planet Insights" className="h-6 object-contain" />
                             </div>
                             {currentLocation && (
                                 <div className="ml-2 px-2 py-0.5 rounded-full bg-white/10 text-[10px] font-mono text-emerald-400 border border-emerald-500/20">
@@ -739,19 +750,19 @@ export function PrivateDashboard() {
                     </header>
 
                     {/* View Switcher */}
-                    <main className="flex-1 p-2 overflow-hidden">
+                    <main className="flex-1 p-2 overflow-hidden flex flex-col">
                         {activeView === "dashboard" ? (
-                            <div className="grid h-full grid-rows-[33%_34%_28%] gap-1.5">
+                            <div className="flex flex-col lg:grid lg:h-full lg:grid-rows-[33%_34%_28%] gap-3 lg:gap-1.5 overflow-y-auto lg:overflow-hidden pb-10 lg:pb-0">
 
                                 {/* ═══ TOP ROW: Cause analysis | Tiles | Map (equal columns) ═══ */}
-                                <div className="grid min-h-0 grid-cols-3 gap-2">
+                                <div className="flex flex-col lg:grid min-h-0 lg:grid-cols-3 gap-3 lg:gap-2">
                                     {/* Top-Left: Cause analysis (pollutant breakdown) */}
-                                    <div className="min-h-0 h-full overflow-hidden">
+                                    <div className="min-h-[300px] lg:min-h-0 h-full overflow-hidden">
                                         <PollutantDonutChart airData={safeAirData} />
                                     </div>
 
                                     {/* Top-Middle: Combined Metrics Panel — ONE cohesive glassmorphism box */}
-                                    <div className="relative rounded-xl overflow-hidden flex min-h-0" style={{ background: 'rgba(6,10,30,0.35)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 6px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
+                                    <div className="relative rounded-xl overflow-hidden flex flex-col lg:flex-row min-h-[450px] lg:min-h-0" style={{ background: 'rgba(6,10,30,0.35)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 6px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
                                         {capabilities.has_aqi && (
                                             <div className={`flex-1 min-h-0 overflow-hidden transition-opacity duration-500 ${!airData ? 'opacity-50 blur-[1px]' : 'opacity-100'}`}>
                                                 <AirQualityCard
@@ -766,7 +777,10 @@ export function PrivateDashboard() {
                                         )}
                                         {/* Vertical Dashed Divider */}
                                         {capabilities.has_aqi && capabilities.has_water && (
-                                            <div className="shrink-0 self-stretch my-3" style={{ width: '1px', borderLeft: '1px dashed rgba(255,255,255,0.15)' }} />
+                                            <>
+                                                <div className="shrink-0 self-stretch my-3 hidden lg:block" style={{ width: '1px', borderLeft: '1px dashed rgba(255,255,255,0.15)' }} />
+                                                <div className="shrink-0 self-stretch mx-3 lg:hidden" style={{ height: '1px', borderTop: '1px dashed rgba(255,255,255,0.15)' }} />
+                                            </>
                                         )}
                                         {capabilities.has_water && (
                                             <div className="flex-1 min-h-0 overflow-hidden">
@@ -783,15 +797,15 @@ export function PrivateDashboard() {
                                     </div>
 
                                     {/* Top-Right: Interactive Device Map */}
-                                    <div className="min-h-0 overflow-hidden rounded-xl">
+                                    <div className="min-h-[300px] lg:min-h-0 overflow-hidden rounded-xl">
                                         <LeafletMapCard locations={Object.values(locationsStatus)} />
                                     </div>
                                 </div>
 
                                 {/* ═══ MID ROW: AQI history | Water trend | Pump (equal columns) ═══ */}
-                                <div className="grid min-h-0 grid-cols-3 gap-2">
+                                <div className="flex flex-col lg:grid min-h-0 lg:grid-cols-3 gap-3 lg:gap-2">
                                     {/* Mid-Left: AQI Pollutant Level chart */}
-                                    <div className="min-h-0 overflow-hidden">
+                                    <div className="min-h-[300px] lg:min-h-0 overflow-hidden">
                                         <MetricHistoryChart
                                             data={safeAirData.chartData.labels.map((l: string, i: number) => ({
                                                 label: l,
@@ -879,8 +893,8 @@ export function PrivateDashboard() {
                                         </div>
                                     </div>
 
-                                    {/* Bot-Right: Water Quality — bar chart only */}
-                                    <div className="min-h-0 overflow-hidden">
+                                    {/* Bot-Right: Water Quality — bar chart only (overflow visible so Chart.js x-axis labels are not clipped) */}
+                                    <div className="flex min-h-[240px] flex-col overflow-visible">
                                         <WaterQualityCard
                                             data={safeWaterData}
                                             activeMetric={selectedWaterMetric}

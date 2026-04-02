@@ -87,7 +87,8 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
   // ==========================================
   // STATIC BAR CHART PREPARATION (OLD STYLE)
   // ==========================================
-  const allLabels = ["Ground Water Level", "pH Level", "TDS"]
+  /* Short labels so x-axis fits without clipping in tight tiles */
+  const allLabels = ["Level", "pH", "TDS"]
   const allLineData = [animatedValues.level, animatedValues.ph, animatedValues.tds]
   const allBarData = [animatedValues.level, animatedValues.ph, animatedValues.tds]
 
@@ -130,6 +131,9 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
   const barChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: { top: 8, right: 10, bottom: 28, left: 8 },
+    },
     plugins: {
       legend: { display: false },
       tooltip: {
@@ -147,15 +151,23 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
     },
     scales: {
       x: {
-        ticks: { color: "#64748b", font: { size: 10 } },
+        offset: true,
+        ticks: {
+          color: "#94a3b8",
+          font: { size: 10 },
+          maxRotation: 0,
+          autoSkip: false,
+        },
         grid: { display: false },
+        border: { display: true, color: "rgba(148, 163, 184, 0.25)" },
       },
       y: {
-        ticks: { color: "#64748b", font: { size: 10 } },
+        ticks: { color: "#94a3b8", font: { size: 10 } },
         beginAtZero: true,
-        grid: { color: "rgba(148, 163, 184, 0.05)" },
-        border: { display: false }
-      }
+        grace: "5%",
+        grid: { color: "rgba(148, 163, 184, 0.08)" },
+        border: { display: true, color: "rgba(148, 163, 184, 0.25)" },
+      },
     },
     animation: {
       duration: 750,
@@ -278,7 +290,7 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
 
   return (
     <div
-      className={`card-vibrant card-water group relative flex h-full flex-col transition-all duration-700 ${compact || mode ? '!p-3' : ''} ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+      className={`card-vibrant card-water group relative flex h-full min-h-0 flex-col overflow-visible transition-all duration-700 ${compact || mode ? '!p-3' : ''} ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
         } ${isOffline ? 'opacity-50 blur-[2px] pointer-events-none' : 'cursor-pointer hover:shadow-[0_0_30px_rgba(6,182,212,0.1)]'}`}
       style={{ transitionDelay: "200ms" }}
       onClick={onExpand}
@@ -344,8 +356,10 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
 
       {/* Bar Chart Section — visible in bar-only mode or full non-compact */}
       {showBar && (
-        <div className="relative z-10 mb-4 flex-1 flex flex-col min-h-[140px]">
-          <div className="flex items-center justify-between mb-2">
+        <div
+          className={`relative z-10 mb-4 flex min-h-0 flex-1 flex-col ${mode === "bar-only" ? "min-h-[220px]" : "min-h-[140px]"}`}
+        >
+          <div className="mb-2 flex shrink-0 items-center justify-between">
             <h3 className="text-xs font-medium uppercase tracking-widest text-slate-400">
               Water Quality
             </h3>
@@ -361,7 +375,10 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
               </button>
             )}
           </div>
-          <div className="flex-1">
+          {/* Explicit height so Chart.js (maintainAspectRatio: false) reserves space for x/y ticks */}
+          <div
+            className={`relative w-full flex-1 ${mode === "bar-only" ? "min-h-[200px]" : "min-h-[120px]"}`}
+          >
             <Chart type="bar" data={barChartData} options={barChartOptions as any} />
           </div>
         </div>

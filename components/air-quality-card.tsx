@@ -184,14 +184,6 @@ export function AirQualityCard({ data, activeMetric, onMetricSelect, onExpand, i
         <div>
           <div className="flex items-center gap-2 mb-1">
             <h2 className={`${compact ? 'text-[10px]' : 'text-sm'} font-semibold uppercase tracking-[0.2em] text-slate-400`}>Air Quality Index</h2>
-            {onExpand && (
-              <button
-                onClick={(e) => { e.stopPropagation(); onExpand(); }}
-                className="rounded-full bg-white/5 p-1 text-slate-400 hover:text-white transition-colors"
-              >
-                <Maximize2 className="h-4 w-4" />
-              </button>
-            )}
           </div>
           <div className="flex items-baseline gap-2">
             <span
@@ -205,7 +197,16 @@ export function AirQualityCard({ data, activeMetric, onMetricSelect, onExpand, i
             </div>
           </div>
         </div>
-        <div className={`h-3 w-3 animate-pulse rounded-full ${status.bg.replace('/20', '')} ${status.glow}`} />
+        <div className="flex items-center gap-3">
+          {onExpand && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onExpand(); }}
+              className="rounded-full bg-white/5 p-1 text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <Maximize2 className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Interactive Grid of Pollutants */}
