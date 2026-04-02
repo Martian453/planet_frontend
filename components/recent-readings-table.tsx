@@ -69,7 +69,7 @@ export function RecentReadingsTable({
         <div className="flex items-center gap-1.5">
           <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2 py-1">
             <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="text-[10px] font-mono text-cyan-400">PREVIOUS YEAR</span>
+            <span className="text-[10px] font-mono text-cyan-400">CURRENT YEAR</span>
           </div>
           <button
             type="button"
