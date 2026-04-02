@@ -307,7 +307,12 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
         <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-cyan-500/5 to-transparent" />
       </div>
 
-      <div className="relative z-10 mb-4 flex items-center justify-center">
+      <div className="relative z-10 mb-4 flex items-center justify-center gap-2">
+        <img
+          src="/humidity.png"
+          alt="Water Logo"
+          className="h-6 object-contain rounded-full"
+        />
         <h2 className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-sm font-medium uppercase tracking-[0.2em] text-transparent">
           {cardTitle}
         </h2>

@@ -13,7 +13,11 @@ import dynamic from "next/dynamic"
 import { useRealtimeData } from "@/hooks/useRealtimeData"
 import { useAuth } from "@/components/auth-provider"
 import { getApiUrl } from "@/lib/api-url"
-import { buildHistoricalReadingsSeries, type HistoricalPeriod } from "@/lib/historical-readings"
+import {
+    buildHistoricalReadingsSeries,
+    buildYearlyMonthlyWaterLevelComparison,
+    type HistoricalPeriod,
+} from "@/lib/historical-readings"
 import { Wifi, WifiOff, Cpu, MapPin, Trash2, Menu } from "lucide-react"
 
 type AirState = {
@@ -602,6 +606,11 @@ export function PrivateDashboard() {
         [readingsPeriod, safeWaterData.level, safeAirData.pm25]
     )
 
+    const yearlyWaterComparison = useMemo(
+        () => buildYearlyMonthlyWaterLevelComparison(safeWaterData.level),
+        [safeWaterData.level]
+    )
+
     // --- INTERACTION HANDLERS ---
     const handlePollutantSelect = (pollutant: string | null) => {
         // Toggle logic: If clicking already active, deselect. Else select.
@@ -860,12 +869,14 @@ export function PrivateDashboard() {
                                             period={readingsPeriod}
                                             onPeriodChange={setReadingsPeriod}
                                             onExpand={() => setReadingsModalOpen(true)}
+                                            yearlyLabels={yearlyWaterComparison.labels}
+                                            yearlyWaterLevels={yearlyWaterComparison.waterLevels}
                                         />
                                     </div>
 
                                     {/* Bot-Center: Sensor Status */}
                                     <div className="card-vibrant min-h-0 overflow-auto rounded-xl p-3">
-                                        <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Sensor Status</h3>
+                                        <h3 className="mb-2 text-[12px] font-bold uppercase tracking-widest text-bold-slate-400">Sensor Status</h3>
                                         <div className="space-y-2">
                                             {myDevices.map((dev) => (
                                                 <div
@@ -981,7 +992,6 @@ export function PrivateDashboard() {
                     open={readingsModalOpen}
                     onClose={() => setReadingsModalOpen(false)}
                     waterLevels={historicalReadings.waterLevels}
-                    aqiValues={historicalReadings.aqiValues}
                     labels={historicalReadings.labels}
                     period={readingsPeriod}
                     onPeriodChange={setReadingsPeriod}

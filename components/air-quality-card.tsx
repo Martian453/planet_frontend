@@ -183,6 +183,11 @@ export function AirQualityCard({ data, activeMetric, onMetricSelect, onExpand, i
       <div className={`relative z-10 ${compact ? 'mb-3' : 'mb-8'} flex items-start justify-between`}>
         <div>
           <div className="flex items-center gap-2 mb-1">
+            <img
+              src="/AQI.png"
+              alt="AQI Logo"
+              className="h-6 object-contain rounded-full"
+            />
             <h2 className={`${compact ? 'text-[10px]' : 'text-sm'} font-semibold uppercase tracking-[0.2em] text-slate-400`}>Air Quality Index</h2>
           </div>
           <div className="flex items-baseline gap-2">
