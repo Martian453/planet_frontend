@@ -1,20 +1,20 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, useMemo } from "react"
 import { AirQualityCard } from "@/components/air-quality-card"
-import { EnvironmentalCore, SpeedometerGauge } from "@/components/environmental-core"
+import { SpeedometerGauge } from "@/components/environmental-core"
 import { WaterQualityCard } from "@/components/water-quality-card"
 import { SidebarNavigation } from "@/components/sidebar-navigation"
 import { PollutantDonutChart } from "@/components/charts/pollutant-donut-chart"
 import { MetricHistoryChart } from "@/components/charts/aqi-forecast-chart"
-import { RecentReadingsTable } from "@/components/recent-readings-table"
+import { RecentReadingsTable, RecentReadingsExpandModal } from "@/components/recent-readings-table"
 import { ChartModal } from "@/components/chart-modal"
-import { OfflineBanner } from "@/components/offline-banner"
 import dynamic from "next/dynamic"
 import { useRealtimeData } from "@/hooks/useRealtimeData"
 import { useAuth } from "@/components/auth-provider"
 import { getApiUrl } from "@/lib/api-url"
-import { Download, Wifi, WifiOff, Cpu, MapPin, Trash2 } from "lucide-react"
+import { buildHistoricalReadingsSeries, type HistoricalPeriod } from "@/lib/historical-readings"
+import { Wifi, WifiOff, Cpu, MapPin, Trash2 } from "lucide-react"
 
 type AirState = {
     pm25: number; pm10: number; co: number; no2: number; o3: number; so2: number;
@@ -48,11 +48,6 @@ const LeafletMapCard = dynamic(
     { ssr: false }
 )
 
-const ChoroplethMapCard = dynamic(
-    () => import("@/components/choropleth-map-card").then((mod) => mod.ChoroplethMapCard),
-    { ssr: false }
-)
-
 export function PrivateDashboard() {
     const { token, user } = useAuth();
     const demoMode = (!token) || (process.env.NEXT_PUBLIC_DEMO_MODE === "true");
@@ -66,6 +61,8 @@ export function PrivateDashboard() {
     const [activeWaterMetric, setActiveWaterMetric] = useState<string | null>(null);
     const [modalConfig, setModalConfig] = useState<{ isOpen: boolean; type: 'aqi' | 'water' | null }>({ isOpen: false, type: null });
     const [timeRange, setTimeRange] = useState<"1h" | "24h" | "7d">("1h");
+    const [readingsPeriod, setReadingsPeriod] = useState<HistoricalPeriod>("week")
+    const [readingsModalOpen, setReadingsModalOpen] = useState(false)
 
     // HYDRATION GUARD INITIALIZATION
     const [mounted, setMounted] = useState(false);
@@ -594,6 +591,16 @@ export function PrivateDashboard() {
     const maxPm25Recorded = airData ? Math.max(airData.pm25, ...(airData.chartData?.pm25 || [])) : 0;
     const maxWaterLevelRecorded = waterData ? Math.max(waterData.level, ...(waterData.chartData?.level || [])) : 0;
 
+    const historicalReadings = useMemo(
+        () =>
+            buildHistoricalReadingsSeries(
+                readingsPeriod,
+                safeWaterData.level,
+                safeAirData.pm25
+            ),
+        [readingsPeriod, safeWaterData.level, safeAirData.pm25]
+    )
+
     // --- INTERACTION HANDLERS ---
     const handlePollutantSelect = (pollutant: string | null) => {
         // Toggle logic: If clicking already active, deselect. Else select.
@@ -736,23 +743,11 @@ export function PrivateDashboard() {
                         {activeView === "dashboard" ? (
                             <div className="grid h-full grid-rows-[33%_34%_28%] gap-1.5">
 
-                                {/* ═══ TOP ROW: Globe | Tiles | Map ═══ */}
-                                <div className="grid grid-cols-[1fr_2fr_1fr] gap-2 min-h-0">
-                                    {/* Top-Left: Globe + Circular Gauges */}
-                                    <div className="min-h-0 overflow-hidden">
-                                        <EnvironmentalCore
-                                            aqi={airData?.pm25 ?? 0}
-                                            lastUpdate={lastMessageTime ? new Date(lastMessageTime).toLocaleTimeString() : "--:--"}
-                                            maxPm25={maxPm25Recorded}
-                                            currentPm25={airData?.pm25 ?? 0}
-                                            maxWaterLevel={maxWaterLevelRecorded}
-                                            currentWaterLevel={waterData?.level ?? 0}
-                                            waterStatus={waterStatus ?? undefined}
-                                            waterIrms={waterData?.irms ?? 0}
-                                            waterPumpStatus={waterData?.pump_status ?? 'N/A'}
-                                            isOffline={locationStatus === "OFFLINE"}
-                                            compact
-                                        />
+                                {/* ═══ TOP ROW: Cause analysis | Tiles | Map (equal columns) ═══ */}
+                                <div className="grid min-h-0 grid-cols-3 gap-2">
+                                    {/* Top-Left: Cause analysis (pollutant breakdown) */}
+                                    <div className="min-h-0 h-full overflow-hidden">
+                                        <PollutantDonutChart airData={safeAirData} />
                                     </div>
 
                                     {/* Top-Middle: Combined Metrics Panel — ONE cohesive glassmorphism box */}
@@ -793,50 +788,41 @@ export function PrivateDashboard() {
                                     </div>
                                 </div>
 
-                                {/* ═══ MID ROW: Donut | Charts | Speedometer ═══ */}
-                                <div className="grid grid-cols-[0.7fr_2.3fr_1fr] gap-2 min-h-0">
-                                    {/* Mid-Left: Pollutant Donut / Cause Analysis */}
+                                {/* ═══ MID ROW: AQI history | Water trend | Pump (equal columns) ═══ */}
+                                <div className="grid min-h-0 grid-cols-3 gap-2">
+                                    {/* Mid-Left: AQI Pollutant Level chart */}
                                     <div className="min-h-0 overflow-hidden">
-                                        <PollutantDonutChart airData={safeAirData} />
+                                        <MetricHistoryChart
+                                            data={safeAirData.chartData.labels.map((l: string, i: number) => ({
+                                                label: l,
+                                                pm25: safeAirData.chartData.pm25[i],
+                                                pm10: safeAirData.chartData.pm10[i],
+                                                co: safeAirData.chartData.co[i],
+                                                no2: safeAirData.chartData.no2[i],
+                                                o3: safeAirData.chartData.o3?.[i] ?? 0,
+                                                so2: safeAirData.chartData.so2?.[i] ?? 0
+                                            }))}
+                                            activeMetric={selectedPollutant}
+                                            onMetricSelect={handleTileClick}
+                                            timeRange="1h"
+                                            onTimeRangeChange={() => { }}
+                                            compact
+                                            onExpand={() => setModalConfig({ isOpen: true, type: 'aqi' })}
+                                        />
                                     </div>
-
-                                    {/* Mid-Middle: TWO charts side-by-side */}
-                                    <div className="grid grid-cols-2 gap-2 min-h-0">
-                                        {/* Left: AQI Pollutant Level chart */}
-                                        <div className="min-h-0 overflow-hidden">
-                                            <MetricHistoryChart
-                                                data={safeAirData.chartData.labels.map((l: string, i: number) => ({
-                                                    label: l,
-                                                    pm25: safeAirData.chartData.pm25[i],
-                                                    pm10: safeAirData.chartData.pm10[i],
-                                                    co: safeAirData.chartData.co[i],
-                                                    no2: safeAirData.chartData.no2[i],
-                                                    o3: safeAirData.chartData.o3?.[i] ?? 0,
-                                                    so2: safeAirData.chartData.so2?.[i] ?? 0
-                                                }))}
-                                                activeMetric={selectedPollutant}
-                                                onMetricSelect={handleTileClick}
-                                                timeRange="1h"
-                                                onTimeRangeChange={() => { }}
-                                                compact
-                                                onExpand={() => setModalConfig({ isOpen: true, type: 'aqi' })}
-                                            />
-                                        </div>
-                                        {/* Right: Water Level Trend — live time-series chart */}
-                                        <div className="card-vibrant rounded-xl p-3 min-h-0 overflow-hidden flex flex-col">
-                                            <WaterQualityCard
-                                                data={safeWaterData}
-                                                activeMetric={selectedWaterMetric}
-                                                onMetricSelect={handleWaterTileClick}
-                                                onExpand={() => setModalConfig({ isOpen: true, type: 'water' })}
-                                                isOffline={isWaterOffline}
-                                                mode="line-only"
-                                            />
-                                        </div>
+                                    {/* Mid-Middle: Water Level Trend — live time-series chart */}
+                                    <div className="card-vibrant flex min-h-0 flex-col overflow-hidden rounded-xl p-3">
+                                        <WaterQualityCard
+                                            data={safeWaterData}
+                                            activeMetric={selectedWaterMetric}
+                                            onMetricSelect={handleWaterTileClick}
+                                            onExpand={() => setModalConfig({ isOpen: true, type: 'water' })}
+                                            isOffline={isWaterOffline}
+                                            mode="line-only"
+                                        />
                                     </div>
-
                                     {/* Mid-Right: Speedometer */}
-                                    <div className="card-vibrant rounded-xl flex flex-col items-center justify-center min-h-0 overflow-hidden p-2">
+                                    <div className="card-vibrant flex min-h-0 flex-col items-center justify-center overflow-hidden rounded-xl p-2">
                                         <h3 className="text-sm font-semibold uppercase tracking-widest text-slate-400 mb-1">Pump Monitor</h3>
                                         <SpeedometerGauge
                                             value={Number.isFinite(waterData?.level ?? 0) ? Number((waterData?.level ?? 0).toFixed(2)) : 0}
@@ -848,18 +834,52 @@ export function PrivateDashboard() {
                                     </div>
                                 </div>
 
-                                {/* ═══ BOT ROW: Recent Readings | Water Quality | Sensor Status ═══ */}
-                                <div className="grid grid-cols-[1fr_2fr_1fr] gap-2 min-h-0">
-                                    {/* Bot-Left: Recent Readings */}
+                                {/* ═══ BOT ROW: Historical readings | Sensor status | Water quality (equal columns) ═══ */}
+                                <div className="grid min-h-0 grid-cols-3 gap-2">
+                                    {/* Bot-Left: Historical readings (week / month) */}
                                     <div className="min-h-0 overflow-hidden">
                                         <RecentReadingsTable
-                                            waterLevels={safeWaterData.chartData.level}
-                                            aqiValues={safeAirData.chartData.pm25}
-                                            labels={safeWaterData.chartData.labels}
+                                            waterLevels={historicalReadings.waterLevels}
+                                            aqiValues={historicalReadings.aqiValues}
+                                            labels={historicalReadings.labels}
+                                            period={readingsPeriod}
+                                            onPeriodChange={setReadingsPeriod}
+                                            onExpand={() => setReadingsModalOpen(true)}
                                         />
                                     </div>
 
-                                    {/* Bot-Center: Water Quality — bar chart only, no metric tiles */}
+                                    {/* Bot-Center: Sensor Status */}
+                                    <div className="card-vibrant min-h-0 overflow-auto rounded-xl p-3">
+                                        <h3 className="mb-2 text-[10px] font-semibold uppercase tracking-widest text-slate-400">Sensor Status</h3>
+                                        <div className="space-y-2">
+                                            {myDevices.map((dev) => (
+                                                <div
+                                                    key={dev.device_id}
+                                                    className="flex cursor-pointer items-center justify-between rounded-lg border border-white/5 bg-white/5 px-3 py-2 transition-colors hover:bg-white/10"
+                                                    onClick={() => dev.location_id && handleLocationSelect(dev.location_id)}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <Cpu className="h-3 w-3 text-emerald-400" />
+                                                        <div>
+                                                            <div className="text-[11px] font-bold text-white">{dev.device_id}</div>
+                                                            <div className="text-[9px] uppercase text-slate-500">{dev.type}</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className={`rounded-full border px-2 py-0.5 text-[9px] font-bold ${dev.status?.toUpperCase() === 'ONLINE'
+                                                        ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-400'
+                                                        : 'border-slate-500/30 bg-slate-500/20 text-slate-400'
+                                                        }`}>
+                                                        {dev.status?.toUpperCase() === 'ONLINE' ? '● ONLINE' : '○ OFFLINE'}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {myDevices.length === 0 && (
+                                                <div className="py-4 text-center text-xs text-slate-500">No devices registered</div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Bot-Right: Water Quality — bar chart only */}
                                     <div className="min-h-0 overflow-hidden">
                                         <WaterQualityCard
                                             data={safeWaterData}
@@ -869,37 +889,6 @@ export function PrivateDashboard() {
                                             isOffline={isWaterOffline}
                                             mode="bar-only"
                                         />
-                                    </div>
-
-                                    {/* Bot-Right: Sensor Status */}
-                                    <div className="card-vibrant rounded-xl p-3 min-h-0 overflow-auto">
-                                        <h3 className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-2">Sensor Status</h3>
-                                        <div className="space-y-2">
-                                            {myDevices.map((dev) => (
-                                                <div
-                                                    key={dev.device_id}
-                                                    className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-2 border border-white/5 hover:bg-white/10 transition-colors cursor-pointer"
-                                                    onClick={() => dev.location_id && handleLocationSelect(dev.location_id)}
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <Cpu className="h-3 w-3 text-emerald-400" />
-                                                        <div>
-                                                            <div className="text-[11px] font-bold text-white">{dev.device_id}</div>
-                                                            <div className="text-[9px] text-slate-500 uppercase">{dev.type}</div>
-                                                        </div>
-                                                    </div>
-                                                    <div className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${dev.status?.toUpperCase() === 'ONLINE'
-                                                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                                                        : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                                                        }`}>
-                                                        {dev.status?.toUpperCase() === 'ONLINE' ? '● ONLINE' : '○ OFFLINE'}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {myDevices.length === 0 && (
-                                                <div className="text-center py-4 text-slate-500 text-xs">No devices registered</div>
-                                            )}
-                                        </div>
                                     </div>
                                 </div>
 
@@ -971,6 +960,16 @@ export function PrivateDashboard() {
                     onPollutantSelect={handleTileClick}
                     selectedWaterMetric={selectedWaterMetric}
                     onWaterMetricSelect={handleWaterTileClick}
+                />
+
+                <RecentReadingsExpandModal
+                    open={readingsModalOpen}
+                    onClose={() => setReadingsModalOpen(false)}
+                    waterLevels={historicalReadings.waterLevels}
+                    aqiValues={historicalReadings.aqiValues}
+                    labels={historicalReadings.labels}
+                    period={readingsPeriod}
+                    onPeriodChange={setReadingsPeriod}
                 />
             </div>
         </div>
