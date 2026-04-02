@@ -189,11 +189,11 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
 
   // Convert ISO labels to local time
   const timeLabels = (data.chartData?.labels || []).map((l) => {
-    try {
-      return new Date(l).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    } catch {
-      return l
+    const d = new Date(l)
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     }
+    return l
   })
 
   const chartValues = (data.chartData as any)?.[chartMetric] || []

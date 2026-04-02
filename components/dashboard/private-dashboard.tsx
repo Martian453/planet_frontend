@@ -466,6 +466,7 @@ export function PrivateDashboard() {
         }));
 
         const tick = () => {
+            if (!isSystemOnline) return;
             const label = timeLabelNow();
 
             setAirData(prev => {
@@ -551,14 +552,14 @@ export function PrivateDashboard() {
             });
         };
 
-        // Faster than real-time, but looks great for demos
-        const interval = setInterval(tick, 2000);
+        // Runs every 5 minutes (300000 ms) instead of 2 seconds
+        const interval = setInterval(tick, 300000);
         // Prime a few points quickly so charts are not empty
         tick();
         tick();
 
         return () => clearInterval(interval);
-    }, [demoMode, currentLocation]);
+    }, [demoMode, currentLocation, isSystemOnline]);
 
     // Visual Effects... (Existing)
     const [stars, setStars] = useState<Array<{ left: string; top: string; delay: string; duration: string }>>([])
