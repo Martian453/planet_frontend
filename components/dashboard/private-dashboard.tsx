@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from "react"
 import { AirQualityCard } from "@/components/air-quality-card"
+import { LoadingScreen } from "@/components/loading-screen"
 import { SpeedometerGauge } from "@/components/environmental-core"
 import { WaterQualityCard } from "@/components/water-quality-card"
 import { SidebarNavigation } from "@/components/sidebar-navigation"
@@ -70,8 +71,13 @@ export function PrivateDashboard() {
 
     // HYDRATION GUARD INITIALIZATION
     const [mounted, setMounted] = useState(false);
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
+
     useEffect(() => {
         setMounted(true);
+        // Artificial delay of 6 seconds (between 5-7)
+        const timer = setTimeout(() => setIsInitialLoading(false), 6000);
+        return () => clearTimeout(timer);
     }, []);
 
     // Navigation State
@@ -665,7 +671,7 @@ export function PrivateDashboard() {
         return [];
     }
 
-    if (!mounted) return null;
+    if (!mounted || isInitialLoading) return <LoadingScreen />;
 
     return (
         <div className={`relative min-h-screen overflow-hidden transition-all duration-1000 ${isSystemOnline ? 'bg-[#050511]' : 'bg-[radial-gradient(circle_at_center,_#0b2a44,_#061a2b)]'}`}>
