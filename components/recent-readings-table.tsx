@@ -117,7 +117,7 @@ export function RecentReadingsTable({
         </div>
       </div>
 
-      <div className="mt-1 flex items-center justify-center gap-4 text-[10px] text-slate-500">
+      <div className="flex items-center justify-center gap-4 text-[11px] text-slate-500">
         <span className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-slate-400/60" />
           2025 (previous)

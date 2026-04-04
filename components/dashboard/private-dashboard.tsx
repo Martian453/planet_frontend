@@ -105,8 +105,8 @@ export function PrivateDashboard() {
         return () => clearInterval(interval);
     }, []);
 
-    const isAirOffline = currentTime - lastAirTime > 30000;
-    const isWaterOffline = currentTime - lastWaterTime > 30000;
+    const isAirOffline = currentTime - lastAirTime > 4000000;
+    const isWaterOffline = currentTime - lastWaterTime > 4000000;
 
     // Status Logic
     let locationStatus: "ONLINE" | "PARTIAL" | "OFFLINE" = "OFFLINE";
@@ -563,7 +563,7 @@ export function PrivateDashboard() {
         };
 
         // Runs every 5 minutes (300000 ms) instead of 2 seconds
-        const interval = setInterval(tick, 300000);
+        const interval = setInterval(tick, 360000);
         // Prime a few points quickly so charts are not empty
         tick();
         tick();
