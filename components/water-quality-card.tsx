@@ -362,7 +362,7 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
       {/* Bar Chart Section — visible in bar-only mode or full non-compact */}
       {showBar && (
         <div
-          className={`relative z-10 mb-4 flex min-h-0 flex-1 flex-col ${mode === "bar-only" ? "min-h-[220px]" : "min-h-[140px]"}`}
+          className={`relative z-10 mb-4 flex min-h-0 flex-1 flex-col ${mode === "bar-only" ? "min-h-[160px]" : "min-h-[140px]"}`}
         >
           <div className="mb-2 flex shrink-0 items-center justify-between">
             <h3 className="text-xs font-medium uppercase tracking-widest text-slate-400">
@@ -382,7 +382,7 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
           </div>
           {/* Explicit height so Chart.js (maintainAspectRatio: false) reserves space for x/y ticks */}
           <div
-            className={`relative w-full flex-1 ${mode === "bar-only" ? "min-h-[200px]" : "min-h-[120px]"}`}
+            className={`relative w-full flex-1 ${mode === "bar-only" ? "min-h-[180px]" : "min-h-[160px]"}`}
           >
             <Chart type="bar" data={barChartData} options={barChartOptions as any} />
           </div>
@@ -391,13 +391,13 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
 
       {/* Embedded Live Time-Series Chart — visible in line-only mode or full non-compact */}
       {showLiveChart && (
-        <div className={`relative z-10 flex-1 flex flex-col min-h-[140px] ${mode === "line-only" ? "" : "mt-4 border-t border-white/5 pt-4"}`}>
+        <div className={`relative z-10 flex-1 flex flex-col min-h-[160px] ${mode === "line-only" ? "" : "mt-4 border-t border-white/5 pt-4"}`}>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-[10px] font-medium uppercase tracking-widest text-slate-400">
               Live {cfg.label}
             </h3>
           </div>
-          <div className="flex-1 min-h-[120px]">
+          <div className="flex-1 min-h-[140px]">
             <Chart type="line" data={liveChartData} options={liveChartOptions as any} />
           </div>
         </div>
