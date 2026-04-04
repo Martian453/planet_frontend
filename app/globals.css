@@ -477,7 +477,7 @@
 }
 
 .animate-rotate-slow {
-  animation: rotate-slow 20s linear infinite;
+  animation: rotate-slow 120s linear infinite;
 }
 
 .animation-delay-2000 {
