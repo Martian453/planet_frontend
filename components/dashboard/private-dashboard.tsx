@@ -10,6 +10,10 @@ import { PollutantDonutChart } from "@/components/charts/pollutant-donut-chart"
 import { MetricHistoryChart } from "@/components/charts/aqi-forecast-chart"
 import { RecentReadingsTable, RecentReadingsExpandModal } from "@/components/recent-readings-table"
 import { ChartModal } from "@/components/chart-modal"
+import { AQIPollutantHub } from "@/components/aqi-pollutant-hub"
+import { AnalysisControlSplit } from "@/components/analysis-control-split"
+import { BorewellMonitorCard } from "@/components/borewell-monitor-card"
+import { AiSummarizerCard } from "@/components/ai-summarizer-card"
 import dynamic from "next/dynamic"
 import { useRealtimeData } from "@/hooks/useRealtimeData"
 import { useAuth } from "@/components/auth-provider"
@@ -768,146 +772,60 @@ export function PrivateDashboard() {
                     {/* View Switcher */}
                     <main className="flex-1 p-2 overflow-hidden flex flex-col">
                         {activeView === "dashboard" ? (
-                            <div className="flex flex-col lg:grid lg:h-full lg:grid-rows-[33%_34%_28%] gap-3 lg:gap-1.5 overflow-y-auto lg:overflow-hidden pb-10 lg:pb-0">
+                            <div className="flex flex-col lg:grid lg:h-full lg:grid-cols-[28%_40%_32%] lg:grid-rows-[33%_34%_28%] gap-3 lg:gap-1.5 overflow-hidden">
 
-                                {/* ═══ TOP ROW: Cause analysis | Tiles | Map (equal columns) ═══ */}
-                                <div className="flex flex-col lg:grid min-h-0 lg:grid-cols-3 gap-3 lg:gap-2">
-                                    {/* Top-Left: Cause analysis (pollutant breakdown) */}
-                                    <div className="min-h-[300px] lg:min-h-0 h-full overflow-hidden">
-                                        <PollutantDonutChart airData={safeAirData} />
-                                    </div>
-
-                                    {/* Top-Middle: Combined Metrics Panel — ONE cohesive glassmorphism box */}
-                                    <div className="relative rounded-xl overflow-hidden flex flex-col min-h-[450px] lg:min-h-0 card-vibrant transition-all duration-700" style={{ background: 'rgba(6,10,30,0.35)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 6px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
-                                        
-                                        {/* Unified Header: Environmental Index with side-by-side icons (Compressed) */}
-                                        <div className="relative z-10 flex items-center justify-center gap-3 py-1.5 border-b border-white/5 bg-white/[0.02]">
-                                            <div className="flex items-center gap-1.5">
-                                                <img src="/AQI.png" alt="AQI Logo" className="h-5 w-5 object-contain rounded-full shadow-[0_0_8px_rgba(52,211,153,0.3)]" />
-                                                <img src="/humidity.png" alt="Water Logo" className="h-5 w-5 object-contain rounded-full shadow-[0_0_8px_rgba(34,211,238,0.3)]" />
-                                            </div>
-                                            <h2 className="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-200">
-                                                Environmental Index
-                                            </h2>
-                                        </div>
-
-                                        <div className="flex flex-col lg:flex-row flex-1 min-h-0">
-                                            {capabilities.has_aqi && (
-                                                <div className={`flex-1 min-h-0 overflow-hidden transition-opacity duration-500 ${!airData ? 'opacity-50 blur-[1px]' : 'opacity-100'}`}>
-                                                    <AirQualityCard
-                                                        data={safeAirData}
-                                                        activeMetric={selectedPollutant}
-                                                        onMetricSelect={handleTileClick}
-                                                        onExpand={() => setModalConfig({ isOpen: true, type: 'aqi' })}
-                                                        isOffline={isAirOffline}
-                                                        compact
-                                                        transparent
-                                                    />
-                                                </div>
-                                            )}
-                                            
-                                            {capabilities.has_water && (
-                                                <div className="flex-1 min-h-0 overflow-hidden transition-opacity duration-500">
-                                                    <WaterQualityCard
-                                                        data={safeWaterData}
-                                                        activeMetric={selectedWaterMetric}
-                                                        onMetricSelect={handleWaterTileClick}
-                                                        onExpand={() => setModalConfig({ isOpen: true, type: 'water' })}
-                                                        isOffline={isWaterOffline}
-                                                        compact
-                                                        transparent
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Top-Right: Interactive Device Map */}
-                                    <div className="min-h-[300px] lg:min-h-0 overflow-hidden rounded-xl">
-                                        <LeafletMapCard locations={Object.values(locationsStatus)} />
-                                    </div>
+                                {/* ═══ LEFT COLUMN: Spanning Row 1 & 2 ═══ */}
+                                <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2 min-h-0 overflow-hidden">
+                                    <AQIPollutantHub
+                                        data={safeAirData}
+                                        activeMetric={selectedPollutant}
+                                        onMetricSelect={handleTileClick}
+                                        isOffline={isAirOffline}
+                                    />
                                 </div>
 
-                                {/* ═══ MID ROW: AQI history | Water trend | Pump (equal columns) ═══ */}
-                                <div className="flex flex-col lg:grid min-h-0 lg:grid-cols-3 gap-3 lg:gap-2">
-                                    {/* Mid-Left: AQI Pollutant Level chart */}
-                                    <div className="min-h-[300px] lg:min-h-0 overflow-hidden">
-                                        <MetricHistoryChart
-                                            data={safeAirData.chartData.labels.map((l: string, i: number) => ({
-                                                label: l,
-                                                pm25: safeAirData.chartData.pm25[i],
-                                                pm10: safeAirData.chartData.pm10[i],
-                                                co: safeAirData.chartData.co[i],
-                                                no2: safeAirData.chartData.no2[i],
-                                                o3: safeAirData.chartData.o3?.[i] ?? 0,
-                                                so2: safeAirData.chartData.so2?.[i] ?? 0
-                                            }))}
-                                            activeMetric={selectedPollutant}
-                                            onMetricSelect={handleTileClick}
-                                            timeRange="1h"
-                                            onTimeRangeChange={() => { }}
-                                            compact
-                                            onExpand={() => setModalConfig({ isOpen: true, type: 'aqi' })}
-                                        />
-                                    </div>
-                                    {/* Mid-Middle: Water Level Trend — live time-series chart */}
-                                    <div className="card-vibrant flex min-h-0 flex-col overflow-hidden rounded-xl p-3">
-                                        <WaterQualityCard
-                                            data={safeWaterData}
-                                            activeMetric={selectedWaterMetric}
-                                            onMetricSelect={handleWaterTileClick}
-                                            onExpand={() => setModalConfig({ isOpen: true, type: 'water' })}
-                                            isOffline={isWaterOffline}
-                                            mode="line-only"
-                                        />
-                                    </div>
-                                    {/* Mid-Right: Speedometer */}
-                                    <div className="card-vibrant flex min-h-0 flex-col items-center justify-center overflow-hidden rounded-xl p-2">
-                                        <h3 className="text-sm font-semibold uppercase tracking-widest text-slate-400 mb-1">Pump Monitor</h3>
-                                        <SpeedometerGauge
-                                            value={Number.isFinite(waterData?.level ?? 0) ? Number((waterData?.level ?? 0).toFixed(2)) : 0}
-                                            maxValue={Number.isFinite(maxWaterLevelRecorded) ? Number(maxWaterLevelRecorded.toFixed(2)) : 0}
-                                            status={waterStatus ?? undefined}
-                                            irms={waterData?.irms ?? 0}
-                                            pumpStatus={waterData?.pump_status ?? 'N/A'}
-                                        />
-                                    </div>
+                                {/* ═══ COLUMN 2 (MIDDLE) ═══ */}
+                                {/* Top Middle: Split Analysis & Control */}
+                                <div className="lg:col-start-2 lg:row-start-1 min-h-0 overflow-hidden">
+                                    <AnalysisControlSplit
+                                        airData={safeAirData}
+                                        waterData={safeWaterData}
+                                        maxWaterLevel={maxWaterLevelRecorded}
+                                        waterStatus={waterStatus}
+                                    />
                                 </div>
 
-                                {/* ═══ BOT ROW: Historical readings | Sensor status | Water quality (equal columns) ═══ */}
-                                <div className="grid min-h-0 grid-cols-3 gap-2">
-                                    {/* Bot-Left: Historical readings (week / month) */}
-                                    <div className="min-h-0 overflow-hidden">
-                                        <RecentReadingsTable
-                                            waterLevels={historicalReadings.waterLevels}
-                                            aqiValues={historicalReadings.aqiValues}
-                                            labels={historicalReadings.labels}
-                                            period={readingsPeriod}
-                                            onPeriodChange={setReadingsPeriod}
-                                            onExpand={() => setReadingsModalOpen(true)}
-                                            yearlyLabels={yearlyWaterComparison.labels}
-                                            yearlyWaterLevels={yearlyWaterComparison.waterLevels}
-                                        />
-                                    </div>
+                                {/* Row 2 Middle: Unified Water Trend */}
+                                <div className="lg:col-start-2 lg:row-start-2 min-h-0 overflow-hidden">
+                                    <WaterQualityCard
+                                        data={safeWaterData}
+                                        activeMetric={selectedWaterMetric}
+                                        onMetricSelect={handleWaterTileClick}
+                                        onExpand={() => setModalConfig({ isOpen: true, type: 'water' })}
+                                        isOffline={isWaterOffline}
+                                        mode="line-only"
+                                    />
+                                </div>
 
-                                    {/* Bot-Center: Sensor Status */}
-                                    <div className="card-vibrant min-h-0 overflow-auto rounded-xl p-3">
-                                        <h3 className="mb-2 text-[12px] font-bold uppercase tracking-widest text-bold-slate-400">Sensor Status</h3>
-                                        <div className="space-y-2">
+                                {/* Row 3 Middle: Sensor Status */}
+                                <div className="lg:col-start-2 lg:row-start-3 min-h-0 overflow-hidden">
+                                    <div className="card-vibrant h-full overflow-auto rounded-xl p-3 bg-slate-900/40 border border-white/5 backdrop-blur-xl">
+                                        <h3 className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 border-b border-white/5 pb-1">Sensor Status</h3>
+                                        <div className="space-y-1.5">
                                             {myDevices.map((dev) => (
                                                 <div
                                                     key={dev.device_id}
-                                                    className="flex cursor-pointer items-center justify-between rounded-lg border border-white/5 bg-white/5 px-3 py-2 transition-colors hover:bg-white/10"
+                                                    className="flex cursor-pointer items-center justify-between rounded-lg border border-white/5 bg-white/5 px-3 py-1.5 transition-colors hover:bg-white/10"
                                                     onClick={() => dev.location_id && handleLocationSelect(dev.location_id)}
                                                 >
                                                     <div className="flex items-center gap-2">
                                                         <Cpu className="h-3 w-3 text-emerald-400" />
                                                         <div>
-                                                            <div className="text-[11px] font-bold text-white">{dev.device_id}</div>
-                                                            <div className="text-[9px] uppercase text-slate-500">{dev.type}</div>
+                                                            <div className="text-[10px] font-bold text-white">{dev.device_id}</div>
+                                                            <div className="text-[8px] uppercase text-slate-500">{dev.type}</div>
                                                         </div>
                                                     </div>
-                                                    <div className={`rounded-full border px-2 py-0.5 text-[9px] font-bold ${dev.status?.toUpperCase() === 'ONLINE'
+                                                    <div className={`rounded-full border px-2 py-0.5 text-[8px] font-bold ${dev.status?.toUpperCase() === 'ONLINE'
                                                         ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-400'
                                                         : 'border-slate-500/30 bg-slate-500/20 text-slate-400'
                                                         }`}>
@@ -915,23 +833,38 @@ export function PrivateDashboard() {
                                                     </div>
                                                 </div>
                                             ))}
-                                            {myDevices.length === 0 && (
-                                                <div className="py-4 text-center text-xs text-slate-500">No devices registered</div>
-                                            )}
                                         </div>
                                     </div>
+                                </div>
 
-                                    {/* Bot-Right: Water Quality — bar chart only (overflow visible so Chart.js x-axis labels are not clipped) */}
-                                    <div className="flex min-h-[240px] flex-col overflow-visible">
-                                        <WaterQualityCard
-                                            data={safeWaterData}
-                                            activeMetric={selectedWaterMetric}
-                                            onMetricSelect={handleWaterTileClick}
-                                            onExpand={() => setModalConfig({ isOpen: true, type: 'water' })}
-                                            isOffline={isWaterOffline}
-                                            mode="bar-only"
-                                        />
-                                    </div>
+                                {/* ═══ COLUMN 3 (RIGHT) ═══ */}
+                                {/* Top Right: Map */}
+                                <div className="lg:col-start-3 lg:row-start-1 min-h-0 overflow-hidden rounded-xl">
+                                    <LeafletMapCard locations={Object.values(locationsStatus)} />
+                                </div>
+
+                                {/* Row 2 Right: Borewell Monitor */}
+                                <div className="lg:col-start-3 lg:row-start-2 min-h-0 overflow-hidden">
+                                    <BorewellMonitorCard />
+                                </div>
+
+                                {/* Row 3 Right: AI Summarizer */}
+                                <div className="lg:col-start-3 lg:row-start-3 min-h-0 overflow-hidden">
+                                    <AiSummarizerCard />
+                                </div>
+
+                                {/* ═══ BOTTOM LEFT (Row 3, Col 1) ═══ */}
+                                <div className="lg:col-start-1 lg:row-start-3 min-h-0 overflow-hidden">
+                                    <RecentReadingsTable
+                                        waterLevels={historicalReadings.waterLevels}
+                                        aqiValues={historicalReadings.aqiValues}
+                                        labels={historicalReadings.labels}
+                                        period={readingsPeriod}
+                                        onPeriodChange={setReadingsPeriod}
+                                        onExpand={() => setReadingsModalOpen(true)}
+                                        yearlyLabels={yearlyWaterComparison.labels}
+                                        yearlyWaterLevels={yearlyWaterComparison.waterLevels}
+                                    />
                                 </div>
 
                             </div>

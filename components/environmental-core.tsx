@@ -155,120 +155,109 @@ export function SpeedometerGauge({
   const nx = cx + needleLen * Math.cos(needleRad);
   const ny = cy - needleLen * Math.sin(needleRad);
 
-  return (<>
-    <div className="relative h-40 w-full max-w-sm flex items-center justify-center">
-      <svg viewBox="0 0 360 210" className="h-full w-full">
-        {/* Glow filters for each zone */}
-        <defs>
-          {zones.map((z) => (
-            <filter key={z.label} id={`glow-${z.label}`} x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="6" result="blur" />
-              <feFlood floodColor={z.color} floodOpacity="0.6" result="color" />
-              <feComposite in="color" in2="blur" operator="in" result="shadow" />
-              <feMerge>
-                <feMergeNode in="shadow" />
-                <feMergeNode in="shadow" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          ))}
-        </defs>
+  return (
+    <div className="flex flex-row items-center justify-between w-full h-full px-2 gap-1 scale-120">
+      {/* Gauge on the Left - Maximized Arc */}
+      <div className="relative h-35 w-[85%] flex items-center justify-center overflow-visible">
+        <svg viewBox="0 25 360 150" className="h-full w-full drop-shadow-[0_0_15px_rgba(30,41,59,0.3)]">
+          {/* Glow filters for each zone */}
+          <defs>
+            {zones.map((z) => (
+              <filter key={z.label} id={`glow-${z.label}`} x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="6" result="blur" />
+                <feFlood floodColor={z.color} floodOpacity="0.6" result="color" />
+                <feComposite in="color" in2="blur" operator="in" result="shadow" />
+                <feMerge>
+                  <feMergeNode in="shadow" />
+                  <feMergeNode in="shadow" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            ))}
+          </defs>
 
-        {/* Background arc */}
-        <path
-          d={arcPath(0, 1)}
-          fill="none"
-          stroke="rgba(30,41,59,0.6)"
-          strokeWidth="38"
-          strokeLinecap="butt"
-        />
-
-        {/* Colored zone arcs — flat, thick, with glow on active */}
-        {zones.map((z) => (
+          {/* Background arc */}
           <path
-            key={z.label}
-            d={arcPath(z.from, z.to)}
+            d={arcPath(0, 1)}
             fill="none"
-            stroke={z.color}
+            stroke="rgba(30,41,59,0.7)"
             strokeWidth="34"
             strokeLinecap="butt"
-            opacity={activeStatus === z.label ? 1 : 0.5}
-            filter={activeStatus === z.label ? `url(#glow-${z.label})` : undefined}
-            style={{ transition: "opacity 0.4s ease, filter 0.4s ease" }}
           />
-        ))}
 
-        {/* Dark separator lines between zones */}
-        {[0.25, 0.5, 0.75].map((tick) => {
-          const angle = Math.PI - (tick * Math.PI);
-          const x1 = cx + (r - 20) * Math.cos(angle);
-          const y1 = cy - (r - 20) * Math.sin(angle);
-          const x2 = cx + (r + 20) * Math.cos(angle);
-          const y2 = cy - (r + 20) * Math.sin(angle);
-          return (
-            <line
-              key={tick}
-              x1={x1} y1={y1} x2={x2} y2={y2}
-              stroke="#0f172a"
-              strokeWidth="4"
+          {/* Colored zone arcs */}
+          {zones.map((z) => (
+            <path
+              key={z.label}
+              d={arcPath(z.from, z.to)}
+              fill="none"
+              stroke={z.color}
+              strokeWidth="32"
+              strokeLinecap="butt"
+              opacity={activeStatus === z.label ? 1 : 0.4}
+              filter={activeStatus === z.label ? `url(#glow-${z.label})` : undefined}
+              style={{ transition: "all 0.4s ease" }}
             />
-          );
-        })}
+          ))}
 
-        {/* Outer border arc */}
-        <path
-          d={arcPath(0, 1)}
-          fill="none"
-          stroke="#1e293b"
-          strokeWidth="3"
-          strokeLinecap="round"
-          style={{ transform: `translate(0, 0)` }}
-        />
+          {/* Dark separator lines */}
+          {[0.25, 0.5, 0.75].map((tick) => {
+            const angle = Math.PI - (tick * Math.PI);
+            const x1 = cx + (r - 20) * Math.cos(angle);
+            const y1 = cy - (r - 20) * Math.sin(angle);
+            const x2 = cx + (r + 20) * Math.cos(angle);
+            const y2 = cy - (r + 20) * Math.sin(angle);
+            return (
+              <line key={tick} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#020617" strokeWidth="4" />
+            );
+          })}
 
-        {/* Needle — brighter, more visible */}
-        <line
-          x1={cx} y1={cy}
-          x2={nx} y2={ny}
-          stroke="#e2e8f0"
-          strokeWidth="7"
-          strokeLinecap="round"
-        />
-        <line
-          x1={cx} y1={cy}
-          x2={nx} y2={ny}
-          stroke="#f8fafc"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
+          {/* Needle */}
+          <line
+            x1={cx} y1={cy}
+            x2={nx} y2={ny}
+            stroke="#f8fafc"
+            strokeWidth="6"
+            strokeLinecap="round"
+          />
 
-        {/* Center hub */}
-        <circle cx={cx} cy={cy} r="16" fill="#1e293b" stroke="#334155" strokeWidth="3" />
-        <circle cx={cx} cy={cy} r="9" fill="#334155" />
+          {/* Center hub */}
+          <circle cx={cx} cy={cy} r="14" fill="#0f172a" stroke="#334155" strokeWidth="2" />
+          <circle cx={cx} cy={cy} r="7" fill="#38bdf8" />
 
-        {/* Zone labels — Left to Right: CRITICAL → LOW → MID → HIGH */}
-        <text x="40" y="175" textAnchor="start" className="text-[11px] font-bold" fill="#dc2626">CRITICAL</text>
-        <text x="130" y="70" textAnchor="middle" className="text-[11px] font-bold" fill="#e8eb28f8">LOW</text>
-        <text x="220" y="70" textAnchor="middle" className="text-[11px] font-bold" fill="#3b82f6">MID</text>
-        <text x="310" y="175" textAnchor="end" className="text-[11px] font-bold" fill="#22c55e">HIGH</text>
-      </svg>
-    </div>
-
-    {/* Info Tiles below speedometer */}
-    <div className="flex items-center justify-center gap-3 mt-0 w-full max-w-sm">
-      <div className="flex-1 rounded-xl border border-cyan-500/20 bg-slate-900/60 backdrop-blur-sm px-2 py-1 text-center">
-        <div className="text-[12px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Water Level</div>
-        <div className="text-sm font-bold text-white">{clampedValue.toFixed(1)} ft</div>
+          {/* Zone labels */}
+          <text x="50" y="170" textAnchor="start" className="text-[12px] font-black" fill="#ef4444">CRITICAL</text>
+          <text x="135" y="75" textAnchor="middle" className="text-[12px] font-black" fill="#eab308">LOW</text>
+          <text x="215" y="75" textAnchor="middle" className="text-[12px] font-black" fill="#3b82f6">MID</text>
+          <text x="310" y="170" textAnchor="end" className="text-[12px] font-black" fill="#22c55e">HIGH</text>
+        </svg>
       </div>
-      <div className="flex-1 rounded-xl border border-amber-500/20 bg-slate-900/60 backdrop-blur-sm px-2 py-1 text-center">
-        <div className="text-[12px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">IRMS</div>
-        <div className="text-sm font-bold text-white">{irms.toFixed(1)}</div>
+
+      {/* Vertical Info Bar on the Far Right - Small and Bold */}
+      <div className="flex flex-col justify-center gap-0.5 w-[20%] pl-2 mt-0.5">
+        <div className="flex flex-col items-start py-2 border-b border-white/5">
+          <div className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">Level</div>
+          <div className="text-[11px] font-mono font-black text-cyan-400">
+            {clampedValue.toFixed(1)} <span className="text-[9px] font-normal text-slate-500">ft</span>
+          </div>
+        </div>
+        <div className="flex flex-col items-start py-0.5 border-b border-white/5">
+          <div className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">IRMS</div>
+          <div className="text-[11px] font-mono font-black text-amber-500">
+            {irms.toFixed(1)}
+          </div>
+        </div>
+        <div className="flex flex-col items-start py-0.5">
+          <div className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">Status</div>
+          <div 
+            className="text-[11px] font-black uppercase tracking-widest leading-none drop-shadow-sm"
+            style={{ color: activeZone.color }}
+          >
+            {pumpStatus}
+          </div>
+        </div>
       </div>
-      <div className="flex-1 rounded-xl border border-emerald-500/20 bg-slate-900/60 backdrop-blur-sm px-2 py-1 text-center">
-        <div className="text-[12px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Pump State</div>
-        <div className="text-sm font-bold text-white">{pumpStatus}</div>
-      </div>
-    </div>
-  </>);
+    </div>);
 }
 
 export function EnvironmentalCore({

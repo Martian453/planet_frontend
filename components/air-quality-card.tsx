@@ -168,7 +168,7 @@ export function AirQualityCard({ data, activeMetric, onMetricSelect, onExpand, i
       onClick={onExpand}
       role="button"
       tabIndex={0}
-      className={`${transparent ? '' : 'card-vibrant bg-slate-900/40 border ' + status.border} relative overflow-hidden rounded-3xl ${compact ? 'p-1' : 'p-6'} backdrop-blur-xl transition-all duration-1000 cursor-pointer hover:shadow-[0_0_30px_rgba(52,211,153,0.1)] flex flex-col h-full ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+      className={`${transparent ? 'bg-transparent border-none p-0' : 'card-vibrant bg-slate-900/40 border ' + status.border + ' rounded-3xl ' + (compact ? 'p-1' : 'p-6') + ' backdrop-blur-xl'} relative overflow-hidden transition-all duration-1000 cursor-pointer hover:shadow-[0_0_30px_rgba(52,211,153,0.1)] flex flex-col h-full ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
         } ${isOffline ? 'opacity-50 blur-[2px] pointer-events-none' : ''}`}
     >
       {isOffline && (
@@ -220,7 +220,7 @@ export function AirQualityCard({ data, activeMetric, onMetricSelect, onExpand, i
       )}
 
       {/* Interactive Grid of Pollutants */}
-      <div className={`grid grid-cols-2 ${compact ? 'gap-1.5' : 'gap-3 sm:grid-cols-3'}`}>
+      <div className={`grid ${compact ? 'grid-cols-3 gap-1.5' : 'grid-cols-2 gap-3 sm:grid-cols-3'}`}>
         {[
           { key: "pm25", label: "PM2.5", value: animatedValues.pm25.toFixed(1), unit: "µg/m³", bg: "bg-orange-500", glow: "group-hover:shadow-[0_0_8px_rgba(249,115,22,0.6)]" },
           { key: "pm10", label: "PM10", value: animatedValues.pm10.toFixed(1), unit: "µg/m³", bg: "bg-amber-400", glow: "group-hover:shadow-[0_0_8px_rgba(251,191,36,0.6)]" },
@@ -235,7 +235,7 @@ export function AirQualityCard({ data, activeMetric, onMetricSelect, onExpand, i
               e.stopPropagation();
               onMetricSelect(item.key);
             }}
-            className={`group cursor-pointer relative overflow-hidden rounded-xl border ${compact ? 'p-2' : 'p-3'} transition-all duration-300 ${activeMetric === item.key
+            className={`group cursor-pointer relative overflow-hidden rounded-xl border ${compact ? 'p-1' : 'p-3'} transition-all duration-300 ${activeMetric === item.key
               ? "border-emerald-400/50 bg-emerald-500/10 shadow-[0_0_15px_rgba(52,211,153,0.3)] ring-1 ring-emerald-400 transform scale-[1.02]"
               : "border-white/5 bg-slate-900/40 hover:border-emerald-500/30 hover:bg-slate-800/50 hover:shadow-[0_0_10px_rgba(52,211,153,0.1)]"
               }`}

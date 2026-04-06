@@ -201,7 +201,44 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
 
   const liveChartData = {
     labels: timeLabels,
-    datasets: [
+    datasets: mode === "line-only" ? [
+      {
+        label: "Water Level (ft)",
+        data: (data.chartData as any)?.level || [],
+        borderColor: "rgb(34, 211, 238)",
+        backgroundColor: "rgba(34, 211, 238, 0.05)",
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointBackgroundColor: "rgb(34, 211, 238)",
+      },
+      {
+        label: "pH Level",
+        data: (data.chartData as any)?.ph || [],
+        borderColor: "rgb(74, 222, 128)",
+        backgroundColor: "rgba(74, 222, 128, 0.05)",
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointBackgroundColor: "rgb(74, 222, 128)",
+      },
+      {
+        label: "TDS (ppm)",
+        data: (data.chartData as any)?.tds || [],
+        borderColor: "rgb(251, 191, 36)",
+        backgroundColor: "rgba(251, 191, 36, 0.05)",
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointBackgroundColor: "rgb(251, 191, 36)",
+      }
+    ] : [
       {
         label: cfg.label,
         data: chartValues,
@@ -210,7 +247,7 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
         borderWidth: 2,
         tension: 0.4,
         fill: true,
-        pointRadius: 0, // hide dots by default
+        pointRadius: 0,
         pointHoverRadius: 5,
         pointBackgroundColor: cfg.color,
         pointBorderColor: "#0f172a",
@@ -223,7 +260,16 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { display: false },
+      legend: { 
+        display: mode === "line-only",
+        position: 'top' as const,
+        labels: {
+          color: '#94a3b8',
+          boxWidth: 10,
+          font: { size: 9, weight: 'bold' as any },
+          padding: 10
+        }
+      },
       tooltip: {
         backgroundColor: "rgba(2, 6, 23, 0.9)",
         titleColor: "#94a3b8",
@@ -231,7 +277,7 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
         borderColor: "rgba(148, 163, 184, 0.1)",
         borderWidth: 1,
         padding: 8,
-        displayColors: false,
+        displayColors: mode === "line-only",
       },
     },
     scales: {

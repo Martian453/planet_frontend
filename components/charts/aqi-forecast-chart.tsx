@@ -127,25 +127,25 @@ export function MetricHistoryChart({ data, activeMetric, onMetricSelect, timeRan
             {/* Background glow effect */}
             <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-500/10 blur-[100px]" />
 
-            {/* Header */}
-            <div className={`relative z-10 flex items-center justify-between ${compact ? 'mb-2' : 'mb-6'}`}>
-                <div className="flex items-center gap-2">
-                    <h3 className={`${compact ? 'text-sm' : 'text-sm'} font-bold uppercase tracking-[0.2em] bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent`}>
-                        AQI Pollutant Levels
-                    </h3>
-                    {onExpand && (
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onExpand(); }}
-                            className="rounded-full bg-white/5 p-1 text-slate-400 hover:text-white transition-colors"
-                        >
-                            <Maximize2 className="h-4 w-4" />
-                        </button>
-                    )}
-                    {!compact && <p className="text-[10px] text-slate-500 mt-1 ml-2 block">Click metrics to toggle visibility</p>}
-                </div>
+            {/* Header (Hidden in compact mode used by Hub) */}
+            {!compact && (
+                <div className="relative z-10 flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-bold uppercase tracking-[0.2em] bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+                            AQI Pollutant Levels
+                        </h3>
+                        {onExpand && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onExpand(); }}
+                                className="rounded-full bg-white/5 p-1 text-slate-400 hover:text-white transition-colors"
+                            >
+                                <Maximize2 className="h-4 w-4" />
+                            </button>
+                        )}
+                        <p className="text-[10px] text-slate-500 mt-1 ml-2 block">Click metrics to toggle visibility</p>
+                    </div>
 
-                {/* Time Range Selector */}
-                {!compact && (
+                    {/* Time Range Selector */}
                     <div className="flex bg-slate-950/50 rounded-lg p-1 border border-white/10">
                         {(["1h", "24h", "7d"] as const).map((r) => (
                             <button
@@ -160,8 +160,8 @@ export function MetricHistoryChart({ data, activeMetric, onMetricSelect, timeRan
                             </button>
                         ))}
                     </div>
-                )}
-            </div>
+                </div>
+            )}
 
             {/* Interactive Legend — hidden in compact */}
             {!compact && (

@@ -13,18 +13,16 @@ interface PollutantDonutChartProps {
     airData?: {
         pm25: number
         pm10: number
-        co: number // keeping raw value here, assuming caller passes raw or processed? 
-        // Wait, AirQualityCard passes raw data usually, but we fixed CO there.
-        // Let's assume raw data is passed here from dashboard, so we need to handle CO conversion if needed?
-        // Actually, dashboard passes raw data to AirQualityCard.
-        // We should handle the conversion here too to be safe/consistent.
+        co: number
         no2: number
         so2: number
         o3?: number
     }
+    transparent?: boolean
+    sideBySide?: boolean
 }
 
-export function PollutantDonutChart({ airData }: PollutantDonutChartProps) {
+export function PollutantDonutChart({ airData, transparent = false, sideBySide = false }: PollutantDonutChartProps) {
     const [activeIndex, setActiveIndex] = useState(0)
 
     const data = useMemo(() => {
@@ -64,83 +62,82 @@ export function PollutantDonutChart({ airData }: PollutantDonutChartProps) {
     }
 
     return (
-        <div className="card-vibrant h-full w-full flex flex-col p-3 bg-slate-900/40 rounded-2xl border border-cyan-500/20 backdrop-blur-sm relative overflow-hidden">
+        <div className={`${transparent ? '' : 'card-vibrant bg-slate-900/40 rounded-2xl border border-cyan-500/20 p-3'} h-full w-full flex flex-col backdrop-blur-sm relative overflow-hidden`}>
             {/* Background Glow */}
-            <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full blur-[80px] bg-cyan-500/10 pointer-events-none" />
+            {!transparent && (
+                <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full blur-[80px] bg-cyan-500/10 pointer-events-none" />
+            )}
 
-            <div className="flex items-center justify-between mb-2 relative z-10">
-                <div>
-                    <h3 className="text-[14px] font-semibold uppercase tracking-widest text-cyan-400">
-                        Cause Analysis
-                    </h3>
-                    <p className="text-[11px] text-slate-400">AQI Contribution</p>
-                </div>
-
-            </div>
-
-            <div className="flex-1 w-full relative min-h-[120px] z-10">
-                {/* Center Text */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-                    <span className="text-2xl font-bold text-white drop-shadow-md">
-                        {activeItem.value}
-                    </span>
-                    <span className="text-[10px] uppercase font-bold tracking-wider" style={{ color: activeItem.color }}>
-                        {activeItem.name}
-                    </span>
-                    <span className="text-[9px] text-bold-slate-500">Sub-Index</span>
-                    {activeItem.rawValue !== undefined && (
-                        <span className="absolute right-7 bottom-6 text-[15px] text-cyan-400">
-                            (from {activeItem.rawValue?.toFixed(1)} {activeItem.unit})
-                        </span>
-                    )}
-                </div>
-
-                <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                        <Pie
-                            data={data}
-                            innerRadius={45}
-                            outerRadius={60}
-                            paddingAngle={4}
-                            dataKey="value"
-                            onMouseEnter={onPieEnter}
-                            stroke="none"
-                            cornerRadius={4}
-                        >
-                            {data.map((entry, index) => (
-                                <Cell
-                                    key={`cell-${index}`}
-                                    fill={entry.color}
-                                    stroke="rgba(0,0,0,0.2)"
-                                    strokeWidth={index === activeIndex ? 0 : 0}
-                                    className="transition-all duration-300"
-                                    style={{
-                                        filter: index === activeIndex ? `drop-shadow(0 0 8px ${entry.color})` : 'none',
-                                        opacity: index === activeIndex ? 1 : 0.7,
-                                        transform: index === activeIndex ? 'scale(1.05)' : 'scale(1)',
-                                        transformOrigin: 'center',
-                                        outline: 'none'
-                                    }}
-                                />
-                            ))}
-                        </Pie>
-                    </PieChart>
-                </ResponsiveContainer>
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-1.5 mt-1 relative z-10">
-                {data.slice(0, 4).map((entry, index) => (
-                    <div
-                        key={index}
-                        className={`flex items-center gap-1.5 cursor-pointer transition-all duration-300 px-2 py-1 rounded-full ${index === activeIndex ? "bg-white/10" : "hover:bg-white/5"}`}
-                        onMouseEnter={() => setActiveIndex(index)}
-                    >
-                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: entry.color, boxShadow: `0 0 5px ${entry.color}` }} />
-                        <span className={`text-[12px] font-medium ${index === activeIndex ? "text-white" : "text-slate-400"}`}>
-                            {entry.name}
-                        </span>
+            {!transparent && (
+                <div className="flex items-center justify-between mb-2 relative z-10">
+                    <div>
+                        <h3 className="text-[14px] font-semibold uppercase tracking-widest text-cyan-400">
+                            Cause Analysis
+                        </h3>
+                        <p className="text-[11px] text-slate-400">AQI Contribution</p>
                     </div>
-                ))}
+                </div>
+            )}
+
+            <div className={`flex-1 w-full flex ${sideBySide ? 'flex-row items-center gap-2' : 'flex-col'} min-h-0 relative z-10`}>
+                <div className={`${sideBySide ? 'w-[70%]' : 'w-full'} relative h-full min-h-[145px]`}>
+                    {/* Center Text */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
+                        <span className={`${sideBySide ? 'text-xl' : 'text-2xl'} font-bold text-white drop-shadow-md`}>
+                            {activeItem.value}
+                        </span>
+                        <span className={`${sideBySide ? 'text-[8px]' : 'text-[10px]'} uppercase font-bold tracking-wider`} style={{ color: activeItem.color }}>
+                            {activeItem.name}
+                        </span>
+                        {!sideBySide && <span className="text-[9px] text-bold-slate-500">Sub-Index</span>}
+                    </div>
+
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie
+                                data={data}
+                                innerRadius={sideBySide ? 38 : 45}
+                                outerRadius={sideBySide ? 52 : 60}
+                                paddingAngle={4}
+                                dataKey="value"
+                                onMouseEnter={onPieEnter}
+                                stroke="none"
+                                cornerRadius={4}
+                                cx="50%"
+                                cy="50%"
+                            >
+                                {data.map((entry, index) => (
+                                    <Cell
+                                        key={`cell-${index}`}
+                                        fill={entry.color}
+                                        style={{
+                                            filter: index === activeIndex ? `drop-shadow(0 0 8px ${entry.color})` : 'none',
+                                            opacity: index === activeIndex ? 1 : 0.7,
+                                            transform: index === activeIndex ? 'scale(1.05)' : 'scale(1)',
+                                            transformOrigin: 'center',
+                                            outline: 'none'
+                                        }}
+                                    />
+                                ))}
+                            </Pie>
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
+
+                <div className={`flex ${sideBySide ? 'flex-col items-start gap-1 w-[35%] pr-1' : 'flex-wrap justify-center gap-1.5 mt-1'} relative z-10`}>
+                    {(sideBySide ? data : data.slice(0, 4)).map((entry, index) => (
+                        <div
+                            key={index}
+                            className={`flex items-center gap-1.5 cursor-pointer transition-all duration-300 ${sideBySide ? 'px-0' : 'px-2 py-1 rounded-full'} ${!sideBySide && index === activeIndex ? "bg-white/10" : "hover:bg-white/5"}`}
+                            onMouseEnter={() => setActiveIndex(index)}
+                        >
+                            <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color, boxShadow: `0 0 5px ${entry.color}` }} />
+                            <span className={`${sideBySide ? 'text-[9px]' : 'text-[12px]'} font-semibold truncate ${index === activeIndex ? "text-white" : "text-slate-400"}`}>
+                                {entry.name}
+                            </span>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     )
