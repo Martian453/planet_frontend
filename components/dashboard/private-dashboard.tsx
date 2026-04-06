@@ -778,38 +778,48 @@ export function PrivateDashboard() {
                                     </div>
 
                                     {/* Top-Middle: Combined Metrics Panel — ONE cohesive glassmorphism box */}
-                                    <div className="relative rounded-xl overflow-hidden flex flex-col lg:flex-row min-h-[450px] lg:min-h-0" style={{ background: 'rgba(6,10,30,0.35)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 6px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
-                                        {capabilities.has_aqi && (
-                                            <div className={`flex-1 min-h-0 overflow-hidden transition-opacity duration-500 ${!airData ? 'opacity-50 blur-[1px]' : 'opacity-100'}`}>
-                                                <AirQualityCard
-                                                    data={safeAirData}
-                                                    activeMetric={selectedPollutant}
-                                                    onMetricSelect={handleTileClick}
-                                                    onExpand={() => setModalConfig({ isOpen: true, type: 'aqi' })}
-                                                    isOffline={isAirOffline}
-                                                    compact
-                                                />
+                                    <div className="relative rounded-xl overflow-hidden flex flex-col min-h-[450px] lg:min-h-0 card-vibrant transition-all duration-700" style={{ background: 'rgba(6,10,30,0.35)', backdropFilter: 'blur(32px)', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 6px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
+                                        
+                                        {/* Unified Header: Environmental Index with side-by-side icons (Compressed) */}
+                                        <div className="relative z-10 flex items-center justify-center gap-3 py-1.5 border-b border-white/5 bg-white/[0.02]">
+                                            <div className="flex items-center gap-1.5">
+                                                <img src="/AQI.png" alt="AQI Logo" className="h-5 w-5 object-contain rounded-full shadow-[0_0_8px_rgba(52,211,153,0.3)]" />
+                                                <img src="/humidity.png" alt="Water Logo" className="h-5 w-5 object-contain rounded-full shadow-[0_0_8px_rgba(34,211,238,0.3)]" />
                                             </div>
-                                        )}
-                                        {/* Vertical Dashed Divider */}
-                                        {capabilities.has_aqi && capabilities.has_water && (
-                                            <>
-                                                <div className="shrink-0 self-stretch my-3 hidden lg:block" style={{ width: '1px', borderLeft: '1px dashed rgba(255,255,255,0.15)' }} />
-                                                <div className="shrink-0 self-stretch mx-3 lg:hidden" style={{ height: '1px', borderTop: '1px dashed rgba(255,255,255,0.15)' }} />
-                                            </>
-                                        )}
-                                        {capabilities.has_water && (
-                                            <div className="flex-1 min-h-0 overflow-hidden">
-                                                <WaterQualityCard
-                                                    data={safeWaterData}
-                                                    activeMetric={selectedWaterMetric}
-                                                    onMetricSelect={handleWaterTileClick}
-                                                    onExpand={() => setModalConfig({ isOpen: true, type: 'water' })}
-                                                    isOffline={isWaterOffline}
-                                                    compact
-                                                />
-                                            </div>
-                                        )}
+                                            <h2 className="text-[11px] font-bold uppercase tracking-[0.3em] text-slate-200">
+                                                Environmental Index
+                                            </h2>
+                                        </div>
+
+                                        <div className="flex flex-col lg:flex-row flex-1 min-h-0">
+                                            {capabilities.has_aqi && (
+                                                <div className={`flex-1 min-h-0 overflow-hidden transition-opacity duration-500 ${!airData ? 'opacity-50 blur-[1px]' : 'opacity-100'}`}>
+                                                    <AirQualityCard
+                                                        data={safeAirData}
+                                                        activeMetric={selectedPollutant}
+                                                        onMetricSelect={handleTileClick}
+                                                        onExpand={() => setModalConfig({ isOpen: true, type: 'aqi' })}
+                                                        isOffline={isAirOffline}
+                                                        compact
+                                                        transparent
+                                                    />
+                                                </div>
+                                            )}
+                                            
+                                            {capabilities.has_water && (
+                                                <div className="flex-1 min-h-0 overflow-hidden transition-opacity duration-500">
+                                                    <WaterQualityCard
+                                                        data={safeWaterData}
+                                                        activeMetric={selectedWaterMetric}
+                                                        onMetricSelect={handleWaterTileClick}
+                                                        onExpand={() => setModalConfig({ isOpen: true, type: 'water' })}
+                                                        isOffline={isWaterOffline}
+                                                        compact
+                                                        transparent
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
 
                                     {/* Top-Right: Interactive Device Map */}

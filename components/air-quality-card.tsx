@@ -47,9 +47,10 @@ interface AirQualityCardProps {
   onExpand?: () => void
   isOffline?: boolean
   compact?: boolean
+  transparent?: boolean
 }
 
-export function AirQualityCard({ data, activeMetric, onMetricSelect, onExpand, isOffline = false, compact = false }: AirQualityCardProps) {
+export function AirQualityCard({ data, activeMetric, onMetricSelect, onExpand, isOffline = false, compact = false, transparent = false }: AirQualityCardProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [animatedValues, setAnimatedValues] = useState({
     pm25: 0,
@@ -167,8 +168,8 @@ export function AirQualityCard({ data, activeMetric, onMetricSelect, onExpand, i
       onClick={onExpand}
       role="button"
       tabIndex={0}
-      className={`card-vibrant relative overflow-hidden rounded-3xl border bg-slate-900/40 ${compact ? 'p-3' : 'p-6'} backdrop-blur-xl transition-all duration-1000 cursor-pointer hover:shadow-[0_0_30px_rgba(52,211,153,0.1)] flex flex-col h-full ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-        } ${status.border} ${isOffline ? 'opacity-50 blur-[2px] pointer-events-none' : ''}`}
+      className={`${transparent ? '' : 'card-vibrant bg-slate-900/40 border ' + status.border} relative overflow-hidden rounded-3xl ${compact ? 'p-1' : 'p-6'} backdrop-blur-xl transition-all duration-1000 cursor-pointer hover:shadow-[0_0_30px_rgba(52,211,153,0.1)] flex flex-col h-full ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+        } ${isOffline ? 'opacity-50 blur-[2px] pointer-events-none' : ''}`}
     >
       {isOffline && (
         <div className="absolute top-4 right-4 z-50 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">
@@ -176,46 +177,50 @@ export function AirQualityCard({ data, activeMetric, onMetricSelect, onExpand, i
         </div>
       )}
       {/* Background Glow */}
-      <div
-        className={`absolute -right-20 -top-20 h-64 w-64 rounded-full blur-[100px] transition-colors duration-1000 ${status.bg}`}
-      />
+      {!transparent && (
+        <div
+          className={`absolute -right-20 -top-20 h-64 w-64 rounded-full blur-[100px] transition-colors duration-1000 ${status.bg}`}
+        />
+      )}
 
-      <div className={`relative z-10 ${compact ? 'mb-3' : 'mb-8'} flex items-start justify-between`}>
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <img
-              src="/AQI.png"
-              alt="AQI Logo"
-              className="h-6 object-contain rounded-full"
-            />
-            <h2 className={`${compact ? 'text-[10px]' : 'text-sm'} font-semibold uppercase tracking-[0.2em] text-slate-400`}>Air Quality Index</h2>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span
-              className={`${compact ? 'text-3xl' : 'text-6xl'} font-bold tracking-tighter transition-colors duration-1000 ${status.color
-                } drop-shadow-lg`}
-            >
-              {aqi}
-            </span>
-            <div className={`rounded-full ${compact ? 'px-2 py-0.5 text-[9px]' : 'px-3 py-1 text-xs'} font-bold uppercase tracking-wider ${status.bg} ${status.color}`}>
-              {status.text}
+      {!transparent && (
+        <div className={`relative z-10 ${compact ? 'mb-3' : 'mb-8'} flex items-start justify-between`}>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <img
+                src="/AQI.png"
+                alt="AQI Logo"
+                className="h-6 object-contain rounded-full"
+              />
+              <h2 className={`${compact ? 'text-[10px]' : 'text-sm'} font-semibold uppercase tracking-[0.2em] text-slate-400`}>Air Quality Index</h2>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span
+                className={`${compact ? 'text-3xl' : 'text-6xl'} font-bold tracking-tighter transition-colors duration-1000 ${status.color
+                  } drop-shadow-lg`}
+              >
+                {aqi}
+              </span>
+              <div className={`rounded-full ${compact ? 'px-2 py-0.5 text-[9px]' : 'px-3 py-1 text-xs'} font-bold uppercase tracking-wider ${status.bg} ${status.color}`}>
+                {status.text}
+              </div>
             </div>
           </div>
+          <div className="flex items-center gap-3">
+            {onExpand && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onExpand(); }}
+                className="rounded-full bg-white/5 p-1 text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <Maximize2 className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          {onExpand && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onExpand(); }}
-              className="rounded-full bg-white/5 p-1 text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-            >
-              <Maximize2 className="h-4 w-4" />
-            </button>
-          )}
-        </div>
-      </div>
+      )}
 
       {/* Interactive Grid of Pollutants */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className={`grid grid-cols-2 ${compact ? 'gap-1.5' : 'gap-3 sm:grid-cols-3'}`}>
         {[
           { key: "pm25", label: "PM2.5", value: animatedValues.pm25.toFixed(1), unit: "µg/m³", bg: "bg-orange-500", glow: "group-hover:shadow-[0_0_8px_rgba(249,115,22,0.6)]" },
           { key: "pm10", label: "PM10", value: animatedValues.pm10.toFixed(1), unit: "µg/m³", bg: "bg-amber-400", glow: "group-hover:shadow-[0_0_8px_rgba(251,191,36,0.6)]" },

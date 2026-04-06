@@ -46,9 +46,10 @@ interface WaterQualityCardProps {
    * undefined / "full" → existing behavior (tiles always shown; charts depend on `compact`)
    */
   mode?: "full" | "bar-only" | "line-only"
+  transparent?: boolean
 }
 
-export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand, isOffline = false, compact = false, mode }: WaterQualityCardProps) {
+export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand, isOffline = false, compact = false, mode, transparent = false }: WaterQualityCardProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [hoveredMetric, setHoveredMetric] = useState<string | null>(null)
   const [animatedValues, setAnimatedValues] = useState({
@@ -290,8 +291,8 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
 
   return (
     <div
-      className={`card-vibrant card-water group relative flex h-full min-h-0 flex-col overflow-visible transition-all duration-700 ${compact || mode ? '!p-3' : ''} ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
-        } ${isOffline ? 'opacity-50 blur-[2px] pointer-events-none' : 'cursor-pointer hover:shadow-[0_0_30px_rgba(6,182,212,0.1)]'}`}
+      className={`${transparent ? '' : 'card-vibrant card-water border hover:shadow-[0_0_30px_rgba(6,182,212,0.1)]'} group relative flex h-full min-h-0 flex-col overflow-visible transition-all duration-700 ${compact || mode ? '!p-1.5' : ''} ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+        } ${isOffline ? 'opacity-50 blur-[2px] pointer-events-none' : 'cursor-pointer'}`}
       style={{ transitionDelay: "200ms" }}
       onClick={onExpand}
     >
@@ -301,33 +302,37 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
         </div>
       )}
       {/* Animated background */}
-      <div className="absolute inset-0 overflow-hidden rounded-2xl">
-        <div className="absolute -right-1/4 -top-1/4 h-1/2 w-1/2 animate-blob rounded-full bg-cyan-500/15 blur-3xl" />
-        <div className="animation-delay-2000 absolute -left-1/4 bottom-1/4 h-1/2 w-1/2 animate-blob rounded-full bg-blue-500/15 blur-3xl" />
-        <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-cyan-500/5 to-transparent" />
-      </div>
+      {!transparent && (
+        <div className="absolute inset-0 overflow-hidden rounded-2xl">
+          <div className="absolute -right-1/4 -top-1/4 h-1/2 w-1/2 animate-blob rounded-full bg-cyan-500/15 blur-3xl" />
+          <div className="animation-delay-2000 absolute -left-1/4 bottom-1/4 h-1/2 w-1/2 animate-blob rounded-full bg-blue-500/15 blur-3xl" />
+          <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-cyan-500/5 to-transparent" />
+        </div>
+      )}
 
-      <div className="relative z-10 mb-4 flex items-center justify-center gap-2">
-        <img
-          src="/humidity.png"
-          alt="Water Logo"
-          className="h-6 object-contain rounded-full"
-        />
-        <h2 className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-sm font-medium uppercase tracking-[0.2em] text-transparent">
-          {cardTitle}
-        </h2>
-        {onExpand && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onExpand(); }}
-            className="absolute right-0 rounded-full bg-white/5 p-1.5 text-cyan-400/70 transition-colors hover:bg-white/10 hover:text-cyan-400"
-          >
-            <Maximize2 className="h-4 w-4" />
-          </button>
-        )}
-      </div>
+      {!transparent && (
+        <div className="relative z-10 mb-4 flex items-center justify-center gap-2">
+          <img
+            src="/humidity.png"
+            alt="Water Logo"
+            className="h-6 object-contain rounded-full"
+          />
+          <h2 className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-sm font-medium uppercase tracking-[0.2em] text-transparent">
+            {cardTitle}
+          </h2>
+          {onExpand && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onExpand(); }}
+              className="absolute right-0 rounded-full bg-white/5 p-1.5 text-cyan-400/70 transition-colors hover:bg-white/10 hover:text-cyan-400"
+            >
+              <Maximize2 className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Metrics Grid — hidden in bar-only / line-only modes */}
-      {showTiles && <div className={`relative z-10 mt-6 mb-7 grid grid-cols-3 gap-2`}>
+      {showTiles && <div className={`relative z-10 mt-3 mb-2 grid grid-cols-3 gap-1.5`}>
         {metrics.map((m, i) => (
           <div
             key={m.label}
@@ -348,7 +353,7 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
               {m.label}
             </div>
             <div
-              className={`${compact ? 'text-lg' : 'text-2xl'} font-bold transition-all duration-300 ${(activeMetric === m.key || hoveredMetric === m.key) ? `${m.hoverColor} ${m.glow} scale-110` : `${m.color} ${m.glow}`
+              className={`${compact ? 'text-xl' : 'text-2xl'} font-bold transition-all duration-300 ${(activeMetric === m.key || hoveredMetric === m.key) ? `${m.hoverColor} ${m.glow} scale-110` : `${m.color} ${m.glow}`
                 }`}
             >
               {m.value}
