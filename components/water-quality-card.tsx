@@ -49,7 +49,18 @@ interface WaterQualityCardProps {
   transparent?: boolean
 }
 
-export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand, isOffline = false, compact = false, mode, transparent = false }: WaterQualityCardProps) {
+export function WaterQualityCard({
+  data,
+  activeMetric,
+  onMetricSelect,
+  onExpand,
+  isOffline = false,
+  compact = false,
+  mode,
+  transparent = false,
+  timeRange = "1h",
+  onTimeRangeChange
+}: WaterQualityCardProps & { timeRange?: string; onTimeRangeChange?: (range: "1h" | "24h" | "7d") => void }) {
   const [isVisible, setIsVisible] = useState(false)
   const [hoveredMetric, setHoveredMetric] = useState<string | null>(null)
   const [animatedValues, setAnimatedValues] = useState({
@@ -260,13 +271,15 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { 
+      legend: {
         display: mode === "line-only",
         position: 'top' as const,
         labels: {
-          color: '#94a3b8',
+          color: '#e2e8f0',
           boxWidth: 10,
-          font: { size: 9, weight: 'bold' as any },
+          usePointStyle: true,
+          pointStyle: 'rectRounded',
+          font: { size: 10, weight: 'normal' as any },
           padding: 10
         }
       },
@@ -357,23 +370,46 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
       )}
 
       {!transparent && (
-        <div className="relative z-10 mb-4 flex items-center justify-center gap-2">
-          <img
-            src="/humidity.png"
-            alt="Water Logo"
-            className="h-6 object-contain rounded-full"
-          />
-          <h2 className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-sm font-medium uppercase tracking-[0.2em] text-transparent">
-            {cardTitle}
-          </h2>
-          {onExpand && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onExpand(); }}
-              className="absolute right-0 rounded-full bg-white/5 p-1.5 text-cyan-400/70 transition-colors hover:bg-white/10 hover:text-cyan-400"
-            >
-              <Maximize2 className="h-4 w-4" />
-            </button>
-          )}
+        <div className="relative z-10 mb-4 flex items-center justify-center">
+          <div className="flex items-center gap-2">
+            <img
+              src="/humidity.png"
+              alt="Water Logo"
+              className="h-6 object-contain rounded-full"
+            />
+            <h2 className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-[15px] font-bold uppercase tracking-[0.2em] text-transparent">
+              {cardTitle}
+            </h2>
+          </div>
+
+          <div className="absolute right-0 flex items-center gap-4">
+            {/* Time Range Selector */}
+            {onTimeRangeChange && (
+              <div className="flex items-center gap-1 bg-slate-900/50 p-1 rounded-lg border border-white/5">
+                {(["1h", "24h", "7d"] as const).map((range) => (
+                  <button
+                    key={range}
+                    onClick={(e) => { e.stopPropagation(); onTimeRangeChange(range); }}
+                    className={`px-2 py-0.5 rounded text-[11px] font-black uppercase transition-all ${timeRange === range
+                      ? "bg-cyan-500/20 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.2)]"
+                      : "text-slate-500 hover:text-slate-400"
+                      }`}
+                  >
+                    {range}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {onExpand && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onExpand(); }}
+                className="rounded-full bg-white/5 p-1.5 text-cyan-400/70 transition-colors hover:bg-white/10 hover:text-cyan-400"
+              >
+                <Maximize2 className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -443,11 +479,6 @@ export function WaterQualityCard({ data, activeMetric, onMetricSelect, onExpand,
       {/* Embedded Live Time-Series Chart — visible in line-only mode or full non-compact */}
       {showLiveChart && (
         <div className={`relative z-10 flex-1 flex flex-col min-h-[160px] ${mode === "line-only" ? "" : "mt-4 border-t border-white/5 pt-4"}`}>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-[10px] font-medium uppercase tracking-widest text-slate-400">
-              Live {cfg.label}
-            </h3>
-          </div>
           <div className="flex-1 min-h-[140px]">
             <Chart type="line" data={liveChartData} options={liveChartOptions as any} />
           </div>

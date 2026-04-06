@@ -188,6 +188,31 @@ export function ChartModal({
                             </div>
                         </div>
 
+                        {/* Current Summary Tiles */}
+                        <div className="grid grid-cols-3 gap-4 mb-6">
+                            {Object.entries(waterMetricConfig).map(([key, config]) => {
+                                const latestVal = data.length > 0 ? (data[data.length - 1] as any)[key] : 0;
+                                const unit = key === "level" ? "ft" : key === "tds" ? "ppm" : "";
+                                return (
+                                    <div 
+                                        key={key}
+                                        className="bg-slate-900/40 border border-white/5 rounded-2xl p-4 backdrop-blur-xl group hover:border-cyan-500/30 transition-all duration-300"
+                                    >
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{config.label}</span>
+                                            <div className="w-2 h-2 rounded-full shadow-[0_0_8px_rgba(6,182,212,0.4)]" style={{ backgroundColor: config.color }} />
+                                        </div>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-3xl font-mono font-bold text-white tracking-tighter">
+                                                {typeof latestVal === 'number' ? latestVal.toFixed(1) : latestVal}
+                                            </span>
+                                            <span className="text-[10px] font-bold text-slate-600 uppercase">{unit}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
                         {/* Interactive Legend for Water Metrics */}
                         <div className="flex flex-wrap items-center gap-3 mb-6 bg-slate-900/50 p-4 rounded-xl border border-white/5">
                             <span className="text-xs font-bold text-slate-500 uppercase tracking-widest mr-2">Filters:</span>

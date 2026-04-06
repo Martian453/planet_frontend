@@ -804,6 +804,8 @@ export function PrivateDashboard() {
                                         onExpand={() => setModalConfig({ isOpen: true, type: 'water' })}
                                         isOffline={isWaterOffline}
                                         mode="line-only"
+                                        timeRange={timeRange}
+                                        onTimeRangeChange={setTimeRange}
                                     />
                                 </div>
 
