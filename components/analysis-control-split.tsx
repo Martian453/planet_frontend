@@ -14,8 +14,8 @@ export function AnalysisControlSplit({ airData, waterData, maxWaterLevel, waterS
   return (
     <div className="card-vibrant relative flex h-full flex-row overflow-hidden rounded-xl bg-slate-900/40 backdrop-blur-xl border border-white/5">
       {/* Left: Cause Analysis */}
-      <div className="flex-1 min-w-0 border-r border-white/5 p-3 flex flex-col">
-        <h3 className="text-[14px] font-black uppercase tracking-[0.25em] text-cyan-400 mb-3 border-b border-white/10 pb-1.5 flex items-center justify-center">
+      <div className="flex-1 min-w-0 border-r border-white/5 pt-1 px-3 pb-3 flex flex-col">
+        <h3 className="text-[14px] font-black uppercase tracking-[0.25em] text-cyan-400 mb-1.5 border-b border-white/10 pb-1 flex items-center justify-center">
           Cause Analysis
         </h3>
         <div className="flex-1 min-h-0">
@@ -24,8 +24,8 @@ export function AnalysisControlSplit({ airData, waterData, maxWaterLevel, waterS
       </div>
 
       {/* Right: Pump Monitor */}
-      <div className="flex-1 min-w-0 p-3 flex flex-col items-center">
-        <h3 className="text-[14px] font-black uppercase tracking-[0.25em] text-cyan-400 mb-3 border-b border-white/10 pb-1.5 w-full text-center">
+      <div className="flex-1 min-w-0 pt-1 px-3 pb-3 flex flex-col items-center">
+        <h3 className="text-[14px] font-black uppercase tracking-[0.25em] text-cyan-400 mb-1.5 border-b border-white/10 pb-1 w-full text-center">
           Pump Monitor
         </h3>
         <div className="flex-1 w-full flex items-center justify-center">

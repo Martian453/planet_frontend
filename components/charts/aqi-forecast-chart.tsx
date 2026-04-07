@@ -207,6 +207,7 @@ export function MetricHistoryChart({ data, activeMetric, onMetricSelect, timeRan
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                         data={chartData}
+                        margin={{ top: 5, right: 10, left: 0, bottom: 20 }}
                         onMouseMove={(e: any) => {
                             if (e && e.activeLabel) {
                                 setHoveredTime(e.activeLabel)

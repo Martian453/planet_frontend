@@ -44,7 +44,7 @@ export function AiSummarizerCard() {
           <span className="text-[10px] font-bold uppercase text-red-400 tracking-wider">Pinned Critical Alerts</span>
         </div>
         {pinnedAlerts.map(alert => (
-          <div key={alert.id} className="rounded-lg bg-red-500/10 border border-red-500/20 p-2 flex gap-3 items-start group hover:bg-red-500/20 transition-all cursor-pointer">
+          <div key={alert.id} className="rounded-lg bg-red-500/10 border border-red-500/20 p-0.5 flex gap-3 items-start group hover:bg-red-500/20 transition-all cursor-pointer">
             <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
             <div>
               <div className="text-[11px] font-bold text-white leading-tight mb-0.5">{alert.message}</div>
@@ -77,9 +77,9 @@ export function AiSummarizerCard() {
       <div className="mt-3 rounded-lg bg-white/5 p-2 flex items-center justify-between border border-white/10 group hover:border-emerald-500/30 transition-all">
         <div className="flex items-center gap-2">
           <Zap className="h-3 w-3 text-amber-400" />
-          <span className="text-[10px] font-bold text-slate-400 uppercase">Power Predict</span>
+          <span className="text-[11px] font-bold text-slate-400 uppercase">Power Predict</span>
         </div>
-        <span className="text-[10px] font-mono font-bold text-amber-300">-12% Usage Target Met</span>
+        <span className="text-[11px] font-mono font-bold text-amber-300">-12% Usage Target Met</span>
       </div>
     </div>
   )

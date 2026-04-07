@@ -66,7 +66,7 @@ export function RecentReadingsTable({
           </h3>
           <p className="text-[11px] text-slate-500">Last 12 months</p>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 mr-2">
           <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2 py-1">
             <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse" />
             <span className="text-[10px] font-mono text-cyan-400">CURRENT YEAR</span>
@@ -83,10 +83,10 @@ export function RecentReadingsTable({
         </div>
       </div>
 
-      <div className="relative flex-1">
-        <div ref={scrollRef} className="h-[160px] w-full">
+      <div className="relative flex-1 min-h-0">
+        <div ref={scrollRef} className="h-[140px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={yearlyData} margin={{ top: 10, right: 10, bottom: 6, left: 6 }}>
+            <BarChart data={yearlyData} margin={{ top: 10, right: 10, bottom: 6, left: 0 }}>
               <CartesianGrid stroke="rgba(148, 163, 184, 0.12)" strokeDasharray="3 3" />
               <XAxis
                 dataKey="label"
@@ -100,6 +100,7 @@ export function RecentReadingsTable({
                 tick={{ fill: "#94a3b8", fontSize: 10 }}
                 axisLine={{ stroke: "rgba(148, 163, 184, 0.25)" }}
                 tickLine={false}
+                width={25}
               />
               <Tooltip
                 contentStyle={{
@@ -117,7 +118,7 @@ export function RecentReadingsTable({
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-4 text-[11px] text-slate-500">
+      <div className="flex items-center justify-center gap-4 text-[11px] text-slate-500 my-1">
         <span className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-slate-400/60" />
           2025 (previous)

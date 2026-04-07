@@ -772,7 +772,7 @@ export function PrivateDashboard() {
                     {/* View Switcher */}
                     <main className="flex-1 p-2 overflow-hidden flex flex-col">
                         {activeView === "dashboard" ? (
-                            <div className="flex flex-col lg:grid lg:h-full lg:grid-cols-[28%_40%_32%] lg:grid-rows-[33%_34%_28%] gap-3 lg:gap-1.5 overflow-hidden">
+                            <div className="flex flex-col lg:grid lg:h-full lg:grid-cols-[28%_40%_32%] lg:grid-rows-[32%_33%_35%] gap-3 lg:gap-1.5 overflow-hidden">
 
                                 {/* ═══ LEFT COLUMN: Spanning Row 1 & 2 ═══ */}
                                 <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2 min-h-0 overflow-hidden">

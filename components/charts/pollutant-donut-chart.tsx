@@ -80,13 +80,13 @@ export function PollutantDonutChart({ airData, transparent = false, sideBySide =
             )}
 
             <div className={`flex-1 w-full flex ${sideBySide ? 'flex-row items-center gap-2' : 'flex-col'} min-h-0 relative z-10`}>
-                <div className={`${sideBySide ? 'w-[70%]' : 'w-full'} relative h-full min-h-[145px]`}>
+                <div className={`${sideBySide ? 'w-[80%]' : 'w-full'} relative h-full min-h-[110px] mt-3.5`}>
                     {/* Center Text */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
-                        <span className={`${sideBySide ? 'text-xl' : 'text-2xl'} font-bold text-white drop-shadow-md`}>
+                        <span className={`${sideBySide ? 'text-lg' : 'text-2xl'} font-bold text-white drop-shadow-md`}>
                             {activeItem.value}
                         </span>
-                        <span className={`${sideBySide ? 'text-[8px]' : 'text-[10px]'} uppercase font-bold tracking-wider`} style={{ color: activeItem.color }}>
+                        <span className={`${sideBySide ? 'text-[7px]' : 'text-[10px]'} uppercase font-bold tracking-wider`} style={{ color: activeItem.color }}>
                             {activeItem.name}
                         </span>
                         {!sideBySide && <span className="text-[9px] text-bold-slate-500">Sub-Index</span>}
@@ -96,8 +96,8 @@ export function PollutantDonutChart({ airData, transparent = false, sideBySide =
                         <PieChart>
                             <Pie
                                 data={data}
-                                innerRadius={sideBySide ? 38 : 45}
-                                outerRadius={sideBySide ? 52 : 60}
+                                innerRadius={sideBySide ? 34 : 47}
+                                outerRadius={sideBySide ? 47 : 62}
                                 paddingAngle={4}
                                 dataKey="value"
                                 onMouseEnter={onPieEnter}

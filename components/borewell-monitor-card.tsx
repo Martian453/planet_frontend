@@ -123,7 +123,7 @@ export function BorewellMonitorCard() {
       </div>
 
       {/* Leak & Alerts - Always Visible */}
-      <div className={`mt-2 relative overflow-hidden rounded-lg p-1.5 flex items-center justify-between border transition-all duration-300 ${mockData.leakDetected
+      <div className={`mt-2 relative overflow-hidden rounded-lg p-2.5 flex items-center justify-between border transition-all duration-300 ${mockData.leakDetected
         ? "bg-red-500/10 border-red-500/30 animate-pulse-slow"
         : "bg-emerald-500/5 border-emerald-500/20"
         }`}>

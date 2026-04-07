@@ -234,22 +234,22 @@ export function SpeedometerGauge({
       </div>
 
       {/* Vertical Info Bar on the Far Right - Small and Bold */}
-      <div className="flex flex-col justify-center gap-0.5 w-[20%] pl-2 mt-0.5">
-        <div className="flex flex-col items-start py-2 border-b border-white/5">
+      <div className="flex flex-col justify-center gap-0.5 w-[19%] pl-1 mt-0.5">
+        <div className="flex flex-col items-start py-0.04 border-b border-white/5">
           <div className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">Level</div>
-          <div className="text-[11px] font-mono font-black text-cyan-400">
+          <div className="text-[13px] font-mono font-black text-cyan-400">
             {clampedValue.toFixed(1)} <span className="text-[9px] font-normal text-slate-500">ft</span>
           </div>
         </div>
         <div className="flex flex-col items-start py-0.5 border-b border-white/5">
-          <div className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">IRMS</div>
-          <div className="text-[11px] font-mono font-black text-amber-500">
+          <div className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">IRMS</div>
+          <div className="text-[13px] font-mono font-black text-amber-500">
             {irms.toFixed(1)}
           </div>
         </div>
         <div className="flex flex-col items-start py-0.5">
-          <div className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">Status</div>
-          <div 
+          <div className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">Status</div>
+          <div
             className="text-[11px] font-black uppercase tracking-widest leading-none drop-shadow-sm"
             style={{ color: activeZone.color }}
           >
