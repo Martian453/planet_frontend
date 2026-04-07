@@ -80,7 +80,7 @@ export function LeafletMapCard({ locations = [] }: LeafletMapCardProps) {
     );
 
     return (
-        <div className="relative flex h-full flex-col gap-4 overflow-hidden rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-slate-950/60 via-slate-900/50 to-slate-950/70 p-0">
+        <div className="relative flex h-[350px] lg:h-full flex-col gap-4 overflow-hidden rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-slate-950/60 via-slate-900/50 to-slate-950/70 p-0">
             <div className="absolute left-4 top-4 z-[1000] rounded-xl border border-emerald-500/20 bg-slate-900/90 px-4 py-3 backdrop-blur-md pointer-events-none">
                 <h2 className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-400 bg-clip-text text-sm font-semibold uppercase tracking-[0.2em] text-transparent">
                     Device Map

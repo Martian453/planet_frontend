@@ -104,7 +104,7 @@ export function BorewellMonitorCard() {
           </div>
         ) : (
           /* Standby View: High-Density Empty State */
-          <div className="h-full w-full flex flex-col items-center justify-center p-4 rounded-xl border border-white/5 bg-slate-900/20 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-2 duration-700">
+          <div className="h-full w-full flex flex-col items-center justify-center p-4 rounded-xl border border-white/5 bg-slate-900/20 backdrop-blur-sm animate-in fade-in duration-700">
             <div className="relative mb-3">
               <div className="absolute inset-0 bg-slate-500/20 blur-xl rounded-full" />
               <Activity className="h-8 w-8 text-slate-600 relative animate-pulse" />

@@ -350,9 +350,9 @@ export function WaterQualityCard({
 
   return (
     <div
-      className={`${transparent ? '' : 'card-vibrant card-water border hover:shadow-[0_0_30px_rgba(6,182,212,0.1)]'} group relative flex h-full min-h-0 flex-col overflow-visible transition-all duration-700 ${compact || mode ? '!p-1.5' : ''} ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+      className={`${transparent ? '' : 'card-vibrant card-water border hover:shadow-[0_0_30px_rgba(6,182,212,0.1)]'} group relative flex h-full min-h-0 flex-col overflow-visible transition-all duration-200 lg:duration-300 ${compact || mode ? '!p-1.5' : ''} backdrop-blur-md lg:backdrop-blur-xl ${isVisible ? "opacity-100" : "opacity-0"
         } ${isOffline ? 'opacity-50 blur-[2px] pointer-events-none' : 'cursor-pointer'}`}
-      style={{ transitionDelay: "200ms" }}
+      style={{ transitionDelay: "100ms" }}
       onClick={onExpand}
     >
       {isOffline && (
@@ -360,9 +360,9 @@ export function WaterQualityCard({
           OFFLINE
         </div>
       )}
-      {/* Animated background */}
+      {/* Animated background - hidden on mobile for performance */}
       {!transparent && (
-        <div className="absolute inset-0 overflow-hidden rounded-2xl">
+        <div className="absolute inset-0 overflow-hidden rounded-2xl hidden sm:block">
           <div className="absolute -right-1/4 -top-1/4 h-1/2 w-1/2 animate-blob rounded-full bg-cyan-500/15 blur-3xl" />
           <div className="animation-delay-2000 absolute -left-1/4 bottom-1/4 h-1/2 w-1/2 animate-blob rounded-full bg-blue-500/15 blur-3xl" />
           <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-cyan-500/5 to-transparent" />
@@ -370,7 +370,7 @@ export function WaterQualityCard({
       )}
 
       {!transparent && (
-        <div className="relative z-10 mb-4 flex items-center justify-center">
+        <div className="relative z-10 mb-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <img
               src="/humidity.png"
@@ -382,7 +382,7 @@ export function WaterQualityCard({
             </h2>
           </div>
 
-          <div className="absolute right-0 flex items-center gap-4">
+          <div className="flex items-center gap-2">
             {/* Time Range Selector */}
             {onTimeRangeChange && (
               <div className="flex items-center gap-1 bg-slate-900/50 p-1 rounded-lg border border-white/5">
@@ -422,7 +422,7 @@ export function WaterQualityCard({
               e.stopPropagation();
               onMetricSelect(m.key === activeMetric ? null : m.key);
             }}
-            className={`group/item cursor-pointer rounded-xl border ${compact ? 'p-2' : 'p-3'} text-center backdrop-blur-sm transition-all duration-300 ${(activeMetric === m.key)
+            className={`group/item cursor-pointer rounded-xl border ${compact ? 'p-2' : 'p-3'} text-center backdrop-blur-sm transition-all duration-200 ${(activeMetric === m.key)
               ? `border-cyan-500/50 bg-cyan-500/10 scale-105 ${m.bgGlow}`
               : "border-white/5 bg-slate-900/50 hover:border-cyan-500/30 hover:bg-slate-800/50 opacity-80 hover:opacity-100"
               }`}
@@ -479,7 +479,7 @@ export function WaterQualityCard({
       {/* Embedded Live Time-Series Chart — visible in line-only mode or full non-compact */}
       {showLiveChart && (
         <div className={`relative z-10 flex-1 flex flex-col min-h-[160px] ${mode === "line-only" ? "" : "mt-4 border-t border-white/5 pt-4"}`}>
-          <div className="flex-1 min-h-[140px]">
+          <div className="flex-1 h-[160px] lg:min-h-[140px]">
             <Chart type="line" data={liveChartData} options={liveChartOptions as any} />
           </div>
         </div>

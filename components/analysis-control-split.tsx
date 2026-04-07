@@ -12,7 +12,7 @@ interface AnalysisControlSplitProps {
 
 export function AnalysisControlSplit({ airData, waterData, maxWaterLevel, waterStatus }: AnalysisControlSplitProps) {
   return (
-    <div className="card-vibrant relative flex h-full flex-row overflow-hidden rounded-xl bg-slate-900/40 backdrop-blur-xl border border-white/5">
+    <div className="card-vibrant relative flex h-auto lg:h-full flex-row overflow-hidden rounded-xl bg-slate-900/40 backdrop-blur-xl border border-white/5">
       {/* Left: Cause Analysis */}
       <div className="flex-1 min-w-0 border-r border-white/5 pt-1 px-3 pb-3 flex flex-col">
         <h3 className="text-[14px] font-black uppercase tracking-[0.25em] text-cyan-400 mb-1.5 border-b border-white/10 pb-1 flex items-center justify-center">

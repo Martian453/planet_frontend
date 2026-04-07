@@ -94,14 +94,14 @@ export function SidebarNavigation({ isOpen, onToggle, activeView, onNavigate }: 
 
       {/* Backdrop Overlay */}
       <div
-        className={`fixed inset-0 z-[150] bg-black/60 transition-all duration-500 ${isOpen ? "opacity-100 backdrop-blur-md" : "pointer-events-none opacity-0 backdrop-blur-none"
+        className={`fixed inset-0 z-[150] bg-black/60 transition-all duration-300 ${isOpen ? "opacity-100 backdrop-blur-md" : "pointer-events-none opacity-0 backdrop-blur-none"
           }`}
         onClick={onToggle}
       />
 
       {/* Sidebar Panel */}
       <aside
-        className={`fixed left-0 top-0 z-[200] flex h-screen w-[340px] flex-col border-r border-emerald-500/10 bg-gradient-to-b from-[#0a0f1a]/98 via-[#0d1425]/98 to-[#0a0f1a]/98 shadow-[0_0_60px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-500 ease-out dark:border-emerald-500/5 ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"
+        className={`fixed left-0 top-0 z-[200] flex h-screen w-[280px] sm:w-[340px] flex-col border-r border-emerald-500/10 bg-gradient-to-b from-[#0a0f1a]/98 via-[#0d1425]/98 to-[#0a0f1a]/98 shadow-[0_0_60px_rgba(0,0,0,0.5)] backdrop-blur-2xl transition-all duration-300 ease-out dark:border-emerald-500/5 ${isOpen ? "translate-x-0 opacity-100" : "-translate-x-full opacity-0"
           }`}
       >
         {/* Header */}

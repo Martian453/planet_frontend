@@ -168,7 +168,7 @@ export function AirQualityCard({ data, activeMetric, onMetricSelect, onExpand, i
       onClick={onExpand}
       role="button"
       tabIndex={0}
-      className={`${transparent ? 'bg-transparent border-none p-0' : 'card-vibrant bg-slate-900/40 border ' + status.border + ' rounded-3xl ' + (compact ? 'p-1' : 'p-6') + ' backdrop-blur-xl'} relative overflow-hidden transition-all duration-1000 cursor-pointer hover:shadow-[0_0_30px_rgba(52,211,153,0.1)] flex flex-col h-full ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+      className={`${transparent ? 'bg-transparent border-none p-0' : 'card-vibrant bg-slate-900/40 border ' + status.border + ' rounded-3xl ' + (compact ? 'p-1' : 'p-6') + ' backdrop-blur-md lg:backdrop-blur-xl'} relative overflow-hidden transition-all duration-200 lg:duration-1000 cursor-pointer hover:shadow-[0_0_30px_rgba(52,211,153,0.1)] active:scale-[0.99] flex flex-col h-full ${isVisible ? "opacity-100" : "opacity-0"
         } ${isOffline ? 'opacity-50 blur-[2px] pointer-events-none' : ''}`}
     >
       {isOffline && (
@@ -176,10 +176,10 @@ export function AirQualityCard({ data, activeMetric, onMetricSelect, onExpand, i
           OFFLINE
         </div>
       )}
-      {/* Background Glow */}
+      {/* Background Glow - hidden on mobile for performance */}
       {!transparent && (
         <div
-          className={`absolute -right-20 -top-20 h-64 w-64 rounded-full blur-[100px] transition-colors duration-1000 ${status.bg}`}
+          className={`absolute -right-20 -top-20 h-64 w-64 rounded-full blur-[100px] transition-colors duration-1000 ${status.bg} hidden sm:block`}
         />
       )}
 
@@ -235,8 +235,8 @@ export function AirQualityCard({ data, activeMetric, onMetricSelect, onExpand, i
               e.stopPropagation();
               onMetricSelect(item.key);
             }}
-            className={`group cursor-pointer relative overflow-hidden rounded-xl border ${compact ? 'p-1' : 'p-3'} transition-all duration-300 ${activeMetric === item.key
-              ? "border-emerald-400/50 bg-emerald-500/10 shadow-[0_0_15px_rgba(52,211,153,0.3)] ring-1 ring-emerald-400 transform scale-[1.02]"
+            className={`group cursor-pointer relative overflow-hidden rounded-xl border ${compact ? 'p-1' : 'p-3'} transition-all duration-200 lg:duration-300 active:scale-95 ${activeMetric === item.key
+              ? "border-emerald-400/50 bg-emerald-500/10 shadow-[0_0_15px_rgba(52,211,153,0.3)] ring-1 ring-emerald-400"
               : "border-white/5 bg-slate-900/40 hover:border-emerald-500/30 hover:bg-slate-800/50 hover:shadow-[0_0_10px_rgba(52,211,153,0.1)]"
               }`}
           >

@@ -62,7 +62,7 @@ export function PollutantDonutChart({ airData, transparent = false, sideBySide =
     }
 
     return (
-        <div className={`${transparent ? '' : 'card-vibrant bg-slate-900/40 rounded-2xl border border-cyan-500/20 p-3'} h-full w-full flex flex-col backdrop-blur-sm relative overflow-hidden`}>
+        <div className={`${transparent ? '' : 'card-vibrant bg-slate-900/40 rounded-2xl border border-cyan-500/20 p-3'} h-[180px] lg:h-full w-full flex flex-col backdrop-blur-md lg:backdrop-blur-xl relative overflow-hidden`}>
             {/* Background Glow */}
             {!transparent && (
                 <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full blur-[80px] bg-cyan-500/10 pointer-events-none" />

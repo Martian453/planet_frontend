@@ -34,7 +34,7 @@ export function AQIPollutantHub({ data, activeMetric, onMetricSelect, isOffline 
   const status = getAqiStatus(aqi)
 
   return (
-    <div className="card-vibrant relative flex h-full flex-col overflow-hidden rounded-xl bg-slate-900/40 backdrop-blur-xl border border-white/5">
+    <div className="card-vibrant relative flex h-auto lg:h-full flex-col overflow-hidden rounded-xl bg-slate-900/40 backdrop-blur-xl border border-white/5">
       {/* Symmetrical Vertical Header (Top-Left) */}
       <div className="flex-none px-3 pt-1 pb-2">
         <div className="flex flex-col items-start gap-1">
@@ -68,8 +68,8 @@ export function AQIPollutantHub({ data, activeMetric, onMetricSelect, isOffline 
       </div>
 
       {/* Filter Hint */}
-      {/* Bottom Section: History Chart - Expanded to fill space */}
-      <div className="flex-1 min-h-[220px] bg-white/[0.01] mt-4">
+      {/* Bottom Section: History Chart - Expanded to fill space (Fixed height for mobile to ensure Recharts load) */}
+      <div className="h-[240px] lg:flex-1 bg-white/[0.01] mt-4">
         <MetricHistoryChart
           data={data.chartData.labels.map((l: string, i: number) => ({
             label: l,

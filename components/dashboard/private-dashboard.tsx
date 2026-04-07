@@ -719,7 +719,7 @@ export function PrivateDashboard() {
                 </div>
 
                 {/* Content */}
-                <div className="relative z-10 flex h-screen flex-col overflow-hidden">
+                <div className="relative z-10 flex min-h-screen lg:h-screen flex-col lg:overflow-hidden">
                     {/* Header - Compact */}
                     <header className="flex items-center justify-between border-b border-white/5 px-4 py-2 backdrop-blur-sm">
                         <div className="flex items-center gap-2">
@@ -769,13 +769,13 @@ export function PrivateDashboard() {
                         </div>
                     </header>
 
-                    {/* View Switcher */}
-                    <main className="flex-1 p-2 overflow-hidden flex flex-col">
+                    {/* View Switcher - Standard window scrolling on mobile for stability */}
+                    <main className="p-2 lg:flex-1 lg:overflow-hidden flex flex-col">
                         {activeView === "dashboard" ? (
-                            <div className="flex flex-col lg:grid lg:h-full lg:grid-cols-[28%_40%_32%] lg:grid-rows-[32%_33%_35%] gap-3 lg:gap-1.5 overflow-hidden">
+                            <div className="flex flex-col lg:grid lg:h-full lg:grid-cols-[28%_40%_32%] lg:grid-rows-[32%_33%_35%] gap-4 lg:gap-1.5">
 
                                 {/* ═══ LEFT COLUMN: Spanning Row 1 & 2 ═══ */}
-                                <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2 min-h-0 overflow-hidden">
+                                <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2 min-h-[450px] lg:min-h-0 overflow-hidden">
                                     <AQIPollutantHub
                                         data={safeAirData}
                                         activeMetric={selectedPollutant}
@@ -786,7 +786,7 @@ export function PrivateDashboard() {
 
                                 {/* ═══ COLUMN 2 (MIDDLE) ═══ */}
                                 {/* Top Middle: Split Analysis & Control */}
-                                <div className="lg:col-start-2 lg:row-start-1 min-h-0 overflow-hidden">
+                                <div className="lg:col-start-2 lg:row-start-1 min-h-0 lg:min-h-0 overflow-hidden">
                                     <AnalysisControlSplit
                                         airData={safeAirData}
                                         waterData={safeWaterData}
@@ -796,7 +796,7 @@ export function PrivateDashboard() {
                                 </div>
 
                                 {/* Row 2 Middle: Unified Water Trend */}
-                                <div className="lg:col-start-2 lg:row-start-2 min-h-0 overflow-hidden">
+                                <div className="lg:col-start-2 lg:row-start-2 min-h-[180px] lg:min-h-0 overflow-hidden">
                                     <WaterQualityCard
                                         data={safeWaterData}
                                         activeMetric={selectedWaterMetric}
@@ -810,8 +810,8 @@ export function PrivateDashboard() {
                                 </div>
 
                                 {/* Row 3 Middle: Sensor Status */}
-                                <div className="lg:col-start-2 lg:row-start-3 min-h-0 overflow-hidden">
-                                    <div className="card-vibrant h-full overflow-auto rounded-xl p-3 bg-slate-900/40 border border-white/5 backdrop-blur-xl">
+                                <div className="lg:col-start-2 lg:row-start-3 min-h-0 lg:min-h-0 overflow-hidden">
+                                <div className="card-vibrant relative flex h-auto lg:h-full flex-col overflow-hidden rounded-xl bg-slate-900/40 backdrop-blur-md lg:backdrop-blur-xl border border-white/5 p-3">
                                         <h3 className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 border-b border-white/5 pb-1">Sensor Status</h3>
                                         <div className="space-y-1.5">
                                             {myDevices.map((dev) => (
@@ -839,14 +839,9 @@ export function PrivateDashboard() {
                                     </div>
                                 </div>
 
-                                {/* ═══ COLUMN 3 (RIGHT) ═══ */}
-                                {/* Top Right: Map */}
-                                <div className="lg:col-start-3 lg:row-start-1 min-h-0 overflow-hidden rounded-xl">
-                                    <LeafletMapCard locations={Object.values(locationsStatus)} />
-                                </div>
-
+                                {/* ═══ COLUMN 3 (RIGHT): Metrics ═══ */}
                                 {/* Row 2 Right: Yearly Water Level Comparison */}
-                                <div className="lg:col-start-3 lg:row-start-2 min-h-0 overflow-hidden">
+                                <div className="lg:col-start-3 lg:row-start-2 min-h-[250px] lg:min-h-0 overflow-hidden">
                                     <RecentReadingsTable
                                         waterLevels={historicalReadings.waterLevels}
                                         aqiValues={historicalReadings.aqiValues}
@@ -860,13 +855,18 @@ export function PrivateDashboard() {
                                 </div>
 
                                 {/* Row 3 Right: AI Summarizer */}
-                                <div className="lg:col-start-3 lg:row-start-3 min-h-0 overflow-hidden">
+                                <div className="lg:col-start-3 lg:row-start-3 min-h-[350px] lg:min-h-0 overflow-hidden">
                                     <AiSummarizerCard />
                                 </div>
 
                                 {/* ═══ BOTTOM LEFT (Row 3, Col 1): Borewell Monitor ═══ */}
-                                <div className="lg:col-start-1 lg:row-start-3 min-h-0 overflow-hidden">
+                                <div className="lg:col-start-1 lg:row-start-3 min-h-[350px] lg:min-h-0 overflow-hidden">
                                     <BorewellMonitorCard />
+                                </div>
+
+                                {/* ═══ COLUMN 3 (RIGHT): Map - Moved to bottom on mobile ═══ */}
+                                <div className="lg:col-start-3 lg:row-start-1 min-h-[300px] lg:min-h-0 overflow-hidden rounded-xl">
+                                    <LeafletMapCard locations={Object.values(locationsStatus)} />
                                 </div>
 
                             </div>
