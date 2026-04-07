@@ -845,18 +845,8 @@ export function PrivateDashboard() {
                                     <LeafletMapCard locations={Object.values(locationsStatus)} />
                                 </div>
 
-                                {/* Row 2 Right: Borewell Monitor */}
+                                {/* Row 2 Right: Yearly Water Level Comparison */}
                                 <div className="lg:col-start-3 lg:row-start-2 min-h-0 overflow-hidden">
-                                    <BorewellMonitorCard />
-                                </div>
-
-                                {/* Row 3 Right: AI Summarizer */}
-                                <div className="lg:col-start-3 lg:row-start-3 min-h-0 overflow-hidden">
-                                    <AiSummarizerCard />
-                                </div>
-
-                                {/* ═══ BOTTOM LEFT (Row 3, Col 1) ═══ */}
-                                <div className="lg:col-start-1 lg:row-start-3 min-h-0 overflow-hidden">
                                     <RecentReadingsTable
                                         waterLevels={historicalReadings.waterLevels}
                                         aqiValues={historicalReadings.aqiValues}
@@ -867,6 +857,16 @@ export function PrivateDashboard() {
                                         yearlyLabels={yearlyWaterComparison.labels}
                                         yearlyWaterLevels={yearlyWaterComparison.waterLevels}
                                     />
+                                </div>
+
+                                {/* Row 3 Right: AI Summarizer */}
+                                <div className="lg:col-start-3 lg:row-start-3 min-h-0 overflow-hidden">
+                                    <AiSummarizerCard />
+                                </div>
+
+                                {/* ═══ BOTTOM LEFT (Row 3, Col 1): Borewell Monitor ═══ */}
+                                <div className="lg:col-start-1 lg:row-start-3 min-h-0 overflow-hidden">
+                                    <BorewellMonitorCard />
                                 </div>
 
                             </div>
