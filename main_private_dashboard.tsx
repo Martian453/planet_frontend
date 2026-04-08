@@ -1,10 +1,9 @@
-"use client"
+﻿"use client"
 
 import { useEffect, useState, useRef, useMemo } from "react"
 import { AirQualityCard } from "@/components/air-quality-card"
 import { LoadingScreen } from "@/components/loading-screen"
 import { SpeedometerGauge } from "@/components/environmental-core"
-import { calculateAQI } from "@/utils/aqi-calculator"
 import { WaterQualityCard } from "@/components/water-quality-card"
 import { SidebarNavigation } from "@/components/sidebar-navigation"
 import { PollutantDonutChart } from "@/components/charts/pollutant-donut-chart"
@@ -12,16 +11,18 @@ import { MetricHistoryChart } from "@/components/charts/aqi-forecast-chart"
 import { RecentReadingsTable, RecentReadingsExpandModal } from "@/components/recent-readings-table"
 import { ChartModal } from "@/components/chart-modal"
 import { AQIPollutantHub } from "@/components/aqi-pollutant-hub"
-import { WaterAnalysisSplit } from "@/components/analysis/water-split"
-import { BorewellHealthIndex } from "@/components/analysis/health-index"
+import { AnalysisControlSplit } from "@/components/analysis-control-split"
 import { BorewellMonitorCard } from "@/components/borewell-monitor-card"
 import { AiSummarizerCard } from "@/components/ai-summarizer-card"
 import dynamic from "next/dynamic"
 import { useRealtimeData } from "@/hooks/useRealtimeData"
 import { useAuth } from "@/components/auth-provider"
 import { getApiUrl } from "@/lib/api-url"
-import { buildHistoricalReadingsSeries, buildYearlyMonthlyWaterLevelComparison, type HistoricalPeriod } from "@/lib/historical-readings"
-import { calculateNextWaterLevel } from "@/utils/data-simulator"
+import {
+    buildHistoricalReadingsSeries,
+    buildYearlyMonthlyWaterLevelComparison,
+    type HistoricalPeriod,
+} from "@/lib/historical-readings"
 import { Wifi, WifiOff, Cpu, MapPin, Trash2, Menu } from "lucide-react"
 
 type AirState = {
@@ -50,9 +51,9 @@ function timeLabelNow() {
     return new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
 }
 
-// Dynamically import Global Globe
-const GlobalComparativeGlobe = dynamic(
-    () => import("@/components/globe/comparative-globe").then((mod) => mod.GlobalComparativeGlobe),
+// Dynamically import Leaflet map
+const LeafletMapCard = dynamic(
+    () => import("@/components/leaflet-map-card").then((mod) => mod.LeafletMapCard),
     { ssr: false }
 )
 
@@ -71,7 +72,6 @@ export function PrivateDashboard() {
     const [timeRange, setTimeRange] = useState<"1h" | "24h" | "7d">("1h");
     const [readingsPeriod, setReadingsPeriod] = useState<HistoricalPeriod>("week")
     const [readingsModalOpen, setReadingsModalOpen] = useState(false)
-    const [isMotorOn, setIsMotorOn] = useState(true) // Lifted motor state
 
     // HYDRATION GUARD INITIALIZATION
     const [mounted, setMounted] = useState(false);
@@ -156,7 +156,7 @@ export function PrivateDashboard() {
                     if (!currentLocOnline && anyOnline) {
                         const onlineLoc = data.find(l => l.online);
                         if (onlineLoc) {
-                            console.log(`🚀 Auto-switching from offline ${currentLocation} to online ${onlineLoc.location_id}`);
+                            console.log(`≡ƒÜÇ Auto-switching from offline ${currentLocation} to online ${onlineLoc.location_id}`);
                             setCurrentLocation(onlineLoc.location_id);
 
                             // Reset data states
@@ -171,7 +171,7 @@ export function PrivateDashboard() {
                         // Initial Load Fallback
                         const firstOnline = data.find(l => l.online);
                         if (firstOnline && (!currentLocation || firstOnline.location_id !== currentLocation)) {
-                            console.log("🚀 Initial Auto-select:", firstOnline.location_id);
+                            console.log("≡ƒÜÇ Initial Auto-select:", firstOnline.location_id);
                             setCurrentLocation(firstOnline.location_id);
                             currentLocOnline = true;
                         }
@@ -523,28 +523,21 @@ export function PrivateDashboard() {
                     chartData: { labels: [], level: [], ph: [], tds: [] }
                 });
 
-                // USE LINKED SIMULATION: Level reacts to motor status
-                const level = calculateNextWaterLevel(p.level, isMotorOn, {
-                    extractionRate: 0.15, // Faster drop when motor is on
-                    rechargeRate: 0.05,   // Slower recharge when off
-                });
-
+                // Level wiggle (ft), ph small drift, tds moderate drift, irms tied to pump activity
+                const level = clamp(nextRandomWalk(p.level, 0.35, 0, 16), 0, 16);
                 const ph = clamp(nextRandomWalk(p.ph, 0.06, 6.2, 8.8), 6.2, 8.8);
                 const tds = clamp(nextRandomWalk(p.tds, 25, 50, 1800), 50, 1800);
 
-                // Pump current follows motor state
-                let irms = 0;
-                let pump_status = "OFF";
+                // Pump current follows level bands a bit
+                const baseIrms = level < 2 ? rand(0.2, 1.0) : level < 4 ? rand(1.0, 2.5) : level < 7 ? rand(2.5, 4.5) : rand(4.0, 8.5);
+                const irms = clamp(nextRandomWalk(baseIrms, 0.6, 0, 15), 0, 15);
 
-                if (isMotorOn) {
-                    const baseIrms = level < 2 ? rand(9.5, 12.5) : level < 4 ? rand(7.0, 9.5) : rand(4.5, 7.5);
-                    irms = clamp(nextRandomWalk(baseIrms, 0.4, 0.1, 15), 0.1, 15);
-                    
-                    if (irms < 4) pump_status = "LOW";
-                    else if (irms < 7) pump_status = "MID";
-                    else if (irms < 12) pump_status = "HIGH";
-                    else pump_status = "CRITICAL";
-                }
+                let pump_status: string;
+                if (irms < 2) pump_status = "OFF";
+                else if (irms < 4) pump_status = "LOW";
+                else if (irms < 7) pump_status = "MID";
+                else if (irms < 12) pump_status = "HIGH";
+                else pump_status = "CRITICAL";
 
                 setWaterStatus(pump_status);
                 setLastWaterTime(Date.now());
@@ -573,13 +566,14 @@ export function PrivateDashboard() {
             });
         };
 
-        // Runs every 2 minutes per user request
-        const interval = setInterval(tick, 120000);
-        // Prime ~10 points so charts have an initial trend
-        for (let i = 0; i < 10; i++) tick();
+        // Runs every 5 minutes (300000 ms) instead of 2 seconds
+        const interval = setInterval(tick, 360000);
+        // Prime a few points quickly so charts are not empty
+        tick();
+        tick();
 
         return () => clearInterval(interval);
-    }, [demoMode, currentLocation, isSystemOnline, isMotorOn]);
+    }, [demoMode, currentLocation, isSystemOnline]);
 
     // Visual Effects... (Existing)
     const [stars, setStars] = useState<Array<{ left: string; top: string; delay: string; duration: string }>>([])
@@ -694,7 +688,7 @@ export function PrivateDashboard() {
                         }`}>
                         {locationStatus === "ONLINE" ? "LOCATION ONLINE" :
                             locationStatus === "PARTIAL" ? "PARTIAL SYSTEMS OFFLINE" :
-                                "LOCATION OFFLINE"} • {new Date().toLocaleTimeString()}
+                                "LOCATION OFFLINE"} ΓÇó {new Date().toLocaleTimeString()}
                     </div>
                 </div>
             )}
@@ -776,56 +770,33 @@ export function PrivateDashboard() {
                     </header>
 
                     {/* View Switcher - Standard window scrolling on mobile for stability */}
-                    <main className="flex-1 overflow-hidden p-2">
+                    <main className="p-2 lg:flex-1 lg:overflow-hidden flex flex-col">
                         {activeView === "dashboard" ? (
-                            <div className="grid h-full grid-cols-[28%_40%_32%] grid-rows-[35%_35%_30%] gap-2">
+                            <div className="flex flex-col lg:grid lg:h-full lg:grid-cols-[28%_40%_32%] lg:grid-rows-[32%_33%_35%] gap-4 lg:gap-1.5">
 
-                                {/* Top Left: Borewell Monitor */}
-                                <div className="col-start-1 row-start-1">
-                                    <BorewellMonitorCard
-                                        isMotorOn={isMotorOn}
-                                        onMotorToggle={() => setIsMotorOn(!isMotorOn)}
-                                        data={demoMode ? {
-                                            flowRate: isMotorOn ? rand(35, 55).toFixed(1) : 0,
-                                            efficiency: isMotorOn ? rand(68, 85).toFixed(0) : 0,
-                                            voltage: rand(228, 242).toFixed(0),
-                                            current: waterData?.irms?.toFixed(1) ?? 0,
-                                            runTime: "4.5",
-                                            liters: isMotorOn ? "850" : "0"
-                                        } : undefined}
+                                {/* ΓòÉΓòÉΓòÉ LEFT COLUMN: Spanning Row 1 & 2 ΓòÉΓòÉΓòÉ */}
+                                <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2 min-h-[450px] lg:min-h-0 overflow-hidden">
+                                    <AQIPollutantHub
+                                        data={safeAirData}
+                                        activeMetric={selectedPollutant}
+                                        onMetricSelect={handleTileClick}
+                                        isOffline={isAirOffline}
                                     />
                                 </div>
 
-                                {/* Top Middle: Split Analysis (Speedometer + Pie) */}
-                                <div className="col-start-2 row-start-1 overflow-hidden">
-                                    <WaterAnalysisSplit
+                                {/* ΓòÉΓòÉΓòÉ COLUMN 2 (MIDDLE) ΓòÉΓòÉΓòÉ */}
+                                {/* Top Middle: Split Analysis & Control */}
+                                <div className="lg:col-start-2 lg:row-start-1 min-h-0 lg:min-h-0 overflow-hidden">
+                                    <AnalysisControlSplit
+                                        airData={safeAirData}
                                         waterData={safeWaterData}
-                                        maxWaterLevel={maxWaterLevel}
+                                        maxWaterLevel={maxWaterLevelRecorded}
                                         waterStatus={waterStatus}
                                     />
                                 </div>
 
-                                {/* Top Right: Global Comparative Globe */}
-                                <div className="col-start-3 row-start-1 overflow-hidden rounded-xl border border-white/5 bg-slate-900/20 backdrop-blur-md">
-                                    <GlobalComparativeGlobe
-                                        userAQI={calculateAQI({
-                                            ...safeAirData,
-                                            co: safeAirData.co / 1000
-                                        })}
-                                        userLat={locationsStatus[currentLocation]?.latitude ?? 12.9716}
-                                        userLng={locationsStatus[currentLocation]?.longitude ?? 77.5946}
-                                        locationName={currentLocation || "BLR-01"}
-                                    />
-                                </div>
-
-                                {/* ═══ ROW 2: THE TRENDS ═══ */}
-                                {/* Middle Left: Borewell System Health Index (Radar) */}
-                                <div className="col-start-1 row-start-2 overflow-hidden">
-                                    <BorewellHealthIndex />
-                                </div>
-
                                 {/* Row 2 Middle: Unified Water Trend */}
-                                <div className="col-start-2 row-start-2 overflow-hidden">
+                                <div className="lg:col-start-2 lg:row-start-2 min-h-[180px] lg:min-h-0 overflow-hidden">
                                     <WaterQualityCard
                                         data={safeWaterData}
                                         activeMetric={selectedWaterMetric}
@@ -835,12 +806,42 @@ export function PrivateDashboard() {
                                         mode="line-only"
                                         timeRange={timeRange}
                                         onTimeRangeChange={setTimeRange}
-                                        isMotorOn={isMotorOn}
                                     />
                                 </div>
 
-                                {/* Middle Right: Yearly Water Level Comparison (Fixed) */}
-                                <div className="col-start-3 row-start-2 overflow-hidden">
+                                {/* Row 3 Middle: Sensor Status */}
+                                <div className="lg:col-start-2 lg:row-start-3 min-h-0 lg:min-h-0 overflow-hidden">
+                                <div className="card-vibrant relative flex h-auto lg:h-full flex-col overflow-hidden rounded-xl bg-slate-900/40 backdrop-blur-md lg:backdrop-blur-xl border border-white/5 p-3">
+                                        <h3 className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 border-b border-white/5 pb-1">Sensor Status</h3>
+                                        <div className="space-y-1.5">
+                                            {myDevices.map((dev) => (
+                                                <div
+                                                    key={dev.device_id}
+                                                    className="flex cursor-pointer items-center justify-between rounded-lg border border-white/5 bg-white/5 px-3 py-1.5 transition-colors hover:bg-white/10"
+                                                    onClick={() => dev.location_id && handleLocationSelect(dev.location_id)}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <Cpu className="h-3 w-3 text-emerald-400" />
+                                                        <div>
+                                                            <div className="text-[10px] font-bold text-white">{dev.device_id}</div>
+                                                            <div className="text-[8px] uppercase text-slate-500">{dev.type}</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className={`rounded-full border px-2 py-0.5 text-[8px] font-bold ${dev.status?.toUpperCase() === 'ONLINE'
+                                                        ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-400'
+                                                        : 'border-slate-500/30 bg-slate-500/20 text-slate-400'
+                                                        }`}>
+                                                        {dev.status?.toUpperCase() === 'ONLINE' ? 'ΓùÅ ONLINE' : 'Γùï OFFLINE'}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* ΓòÉΓòÉΓòÉ COLUMN 3 (RIGHT): Metrics ΓòÉΓòÉΓòÉ */}
+                                {/* Row 2 Right: Yearly Water Level Comparison */}
+                                <div className="lg:col-start-3 lg:row-start-2 min-h-[250px] lg:min-h-0 overflow-hidden">
                                     <RecentReadingsTable
                                         waterLevels={historicalReadings.waterLevels}
                                         aqiValues={historicalReadings.aqiValues}
@@ -853,55 +854,19 @@ export function PrivateDashboard() {
                                     />
                                 </div>
 
-                                {/* Bottom Left: AQI Pollutant Hub (Compact/Expand) */}
-                                <div className="col-start-1 row-start-3 h-full flex flex-col overflow-hidden">
-                                    <AQIPollutantHub
-                                        data={safeAirData}
-                                        activeMetric={selectedPollutant}
-                                        onMetricSelect={handleTileClick}
-                                        isOffline={isAirOffline}
-                                        mode="compact"
-                                        timeRange={timeRange}
-                                        onTimeRangeChange={setTimeRange}
-                                    />
-                                </div>
-
-                                {/* Bottom Middle: Sensor Status */}
-                                <div className="col-start-2 row-start-3 h-full flex flex-col overflow-hidden">
-                                    <div className="relative flex h-full flex-col rounded-xl bg-slate-900/40 backdrop-blur-xl border border-white/5 p-3 overflow-hidden">
-                                        <h3 className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 border-b border-white/5 pb-1 shrink-0">Sensor Status</h3>
-                                        <div className="flex flex-col gap-1.5 flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
-                                            {myDevices.map((dev) => (
-                                                <div
-                                                    key={dev.device_id}
-                                                    className="w-full flex cursor-pointer items-center justify-between rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2 transition-all hover:bg-white/[0.06] group"
-                                                    onClick={() => dev.location_id && handleLocationSelect(dev.location_id)}
-                                                >
-                                                    <div className="flex items-center gap-3 min-w-0">
-                                                        <div className="h-7 w-7 rounded-md bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 shrink-0">
-                                                            <Cpu className="h-3.5 w-3.5 text-emerald-400" />
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <div className="text-[11px] font-bold text-white truncate">{dev.device_id}</div>
-                                                            <div className="text-[8px] uppercase text-slate-500 truncate">{dev.type}</div>
-                                                        </div>
-                                                    </div>
-                                                    <div className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[8px] font-bold uppercase shrink-0 ${dev.status?.toUpperCase() === 'ONLINE'
-                                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                                                        : 'bg-red-500/10 text-red-400 border-red-500/30'
-                                                        }`}>
-                                                        <div className={`h-1.5 w-1.5 rounded-full ${dev.status?.toUpperCase() === 'ONLINE' ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                                                        {dev.status?.toUpperCase() === 'ONLINE' ? 'ONLINE' : 'OFFLINE'}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Bottom Right: AI Summarizer (Fixed) */}
-                                <div className="col-start-3 row-start-3 h-full flex flex-col overflow-hidden">
+                                {/* Row 3 Right: AI Summarizer */}
+                                <div className="lg:col-start-3 lg:row-start-3 min-h-[350px] lg:min-h-0 overflow-hidden">
                                     <AiSummarizerCard />
+                                </div>
+
+                                {/* ΓòÉΓòÉΓòÉ BOTTOM LEFT (Row 3, Col 1): Borewell Monitor ΓòÉΓòÉΓòÉ */}
+                                <div className="lg:col-start-1 lg:row-start-3 min-h-[350px] lg:min-h-0 overflow-hidden">
+                                    <BorewellMonitorCard />
+                                </div>
+
+                                {/* ΓòÉΓòÉΓòÉ COLUMN 3 (RIGHT): Map - Moved to bottom on mobile ΓòÉΓòÉΓòÉ */}
+                                <div className="lg:col-start-3 lg:row-start-1 min-h-[300px] lg:min-h-0 overflow-hidden rounded-xl">
+                                    <LeafletMapCard locations={Object.values(locationsStatus)} />
                                 </div>
 
                             </div>
@@ -972,7 +937,6 @@ export function PrivateDashboard() {
                     onPollutantSelect={handleTileClick}
                     selectedWaterMetric={selectedWaterMetric}
                     onWaterMetricSelect={handleWaterTileClick}
-                    isMotorOn={isMotorOn}
                 />
 
                 <RecentReadingsExpandModal

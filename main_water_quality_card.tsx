@@ -1,6 +1,6 @@
-"use client"
+﻿"use client"
 
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState } from "react"
 import { Chart } from "react-chartjs-2"
 import {
   Chart as ChartJS,
@@ -31,7 +31,6 @@ interface WaterQualityData {
   }
 }
 
-import { generateWaterHistory, generateTimeLabels, type TimeRange } from "@/utils/data-simulator"
 import { Maximize2 } from "lucide-react"
 
 interface WaterQualityCardProps {
@@ -41,11 +40,13 @@ interface WaterQualityCardProps {
   onExpand?: () => void
   isOffline?: boolean
   compact?: boolean
-  isMotorOn?: boolean
+  /** Controls which sections render:
+   * "bar-only"  ΓåÆ title + bar chart only (no tiles, no live chart)
+   * "line-only" ΓåÆ title + live time-series chart only (no tiles, no bar chart)
+   * undefined / "full" ΓåÆ existing behavior (tiles always shown; charts depend on `compact`)
+   */
   mode?: "full" | "bar-only" | "line-only"
   transparent?: boolean
-  timeRange?: TimeRange
-  onTimeRangeChange?: (range: TimeRange) => void
 }
 
 export function WaterQualityCard({
@@ -58,9 +59,8 @@ export function WaterQualityCard({
   mode,
   transparent = false,
   timeRange = "1h",
-  onTimeRangeChange,
-  isMotorOn = false
-}: WaterQualityCardProps) {
+  onTimeRangeChange
+}: WaterQualityCardProps & { timeRange?: string; onTimeRangeChange?: (range: "1h" | "24h" | "7d") => void }) {
   const [isVisible, setIsVisible] = useState(false)
   const [hoveredMetric, setHoveredMetric] = useState<string | null>(null)
   const [animatedValues, setAnimatedValues] = useState({
@@ -199,31 +199,16 @@ export function WaterQualityCard({
   }
   const cfg = metricConfig[chartMetric] || metricConfig.level
 
-  // ==========================================
-  // SIMULATION / HISTORY PREPARATION
-  // ==========================================
-  const simulatedHistory = useMemo(() => {
-    if (timeRange === "1h") {
-      const labels = (data.chartData?.labels || []).map(l => {
-        const d = new Date(l)
-        return !isNaN(d.getTime()) ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : l
-      });
-      return {
-        labels,
-        level: data.chartData?.level || [],
-        ph: data.chartData?.ph || [],
-        tds: data.chartData?.tds || [],
-      };
+  // Convert ISO labels to local time
+  const timeLabels = (data.chartData?.labels || []).map((l) => {
+    const d = new Date(l)
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
     }
+    return l
+  })
 
-    // Generate simulated history for 24h / 7d
-    const count = timeRange === "24h" ? 100 : 300;
-    const labels = generateTimeLabels(timeRange, count).map(l => new Date(l).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
-    return generateWaterHistory(data, timeRange, isMotorOn, count, labels);
-  }, [data, timeRange, isMotorOn]);
-
-  const timeLabels = simulatedHistory.labels;
-  const chartValues = (simulatedHistory as any)?.[chartMetric] || [];
+  const chartValues = (data.chartData as any)?.[chartMetric] || []
 
   const liveChartData = {
     labels: timeLabels,
@@ -271,7 +256,7 @@ export function WaterQualityCard({
         borderColor: cfg.color,
         backgroundColor: cfg.bgColor,
         borderWidth: 2,
-        tension: 0.1, // Less smooth for water physics to look more "recharge" like if needed
+        tension: 0.4,
         fill: true,
         pointRadius: 0,
         pointHoverRadius: 5,
@@ -365,7 +350,7 @@ export function WaterQualityCard({
 
   return (
     <div
-      className={`${transparent ? '' : 'relative h-full w-full overflow-hidden rounded-2xl border border-white/5 bg-slate-900/40 p-3 backdrop-blur-xl hover:shadow-[0_0_30px_rgba(6,182,212,0.1)]'} group flex min-h-0 flex-col transition-all duration-200 ${isVisible ? "opacity-100" : "opacity-0"
+      className={`${transparent ? '' : 'card-vibrant card-water border hover:shadow-[0_0_30px_rgba(6,182,212,0.1)]'} group relative flex h-full min-h-0 flex-col overflow-visible transition-all duration-200 lg:duration-300 ${compact || mode ? '!p-1.5' : ''} backdrop-blur-md lg:backdrop-blur-xl ${isVisible ? "opacity-100" : "opacity-0"
         } ${isOffline ? 'opacity-50 blur-[2px] pointer-events-none' : 'cursor-pointer'}`}
       style={{ transitionDelay: "100ms" }}
       onClick={onExpand}
@@ -375,7 +360,14 @@ export function WaterQualityCard({
           OFFLINE
         </div>
       )}
-      {/* Animated background - removed to match Yearly Comparison style */}
+      {/* Animated background - hidden on mobile for performance */}
+      {!transparent && (
+        <div className="absolute inset-0 overflow-hidden rounded-2xl hidden sm:block">
+          <div className="absolute -right-1/4 -top-1/4 h-1/2 w-1/2 animate-blob rounded-full bg-cyan-500/15 blur-3xl" />
+          <div className="animation-delay-2000 absolute -left-1/4 bottom-1/4 h-1/2 w-1/2 animate-blob rounded-full bg-blue-500/15 blur-3xl" />
+          <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-cyan-500/5 to-transparent" />
+        </div>
+      )}
 
       {!transparent && (
         <div className="relative z-10 mb-4 flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -421,7 +413,7 @@ export function WaterQualityCard({
         </div>
       )}
 
-      {/* Metrics Grid — hidden in bar-only / line-only modes */}
+      {/* Metrics Grid ΓÇö hidden in bar-only / line-only modes */}
       {showTiles && <div className={`relative z-10 mt-3 mb-2 grid grid-cols-3 gap-1.5`}>
         {metrics.map((m, i) => (
           <div
@@ -430,7 +422,7 @@ export function WaterQualityCard({
               e.stopPropagation();
               onMetricSelect(m.key === activeMetric ? null : m.key);
             }}
-            className={`group/item cursor-pointer rounded-xl border p-3 text-center backdrop-blur-sm transition-all duration-200 ${(activeMetric === m.key)
+            className={`group/item cursor-pointer rounded-xl border ${compact ? 'p-2' : 'p-3'} text-center backdrop-blur-sm transition-all duration-200 ${(activeMetric === m.key)
               ? `border-cyan-500/50 bg-cyan-500/10 scale-105 ${m.bgGlow}`
               : "border-white/5 bg-slate-900/50 hover:border-cyan-500/30 hover:bg-slate-800/50 opacity-80 hover:opacity-100"
               }`}
@@ -438,23 +430,23 @@ export function WaterQualityCard({
             onMouseEnter={() => setHoveredMetric(m.key)}
             onMouseLeave={() => setHoveredMetric(null)}
           >
-            <div className={`mb-1 whitespace-pre-line text-[9px] font-semibold uppercase tracking-wider transition-colors ${activeMetric === m.key ? "text-cyan-300" : "text-slate-500"
+            <div className={`mb-1 whitespace-pre-line ${compact ? 'text-[7px]' : 'text-[9px]'} font-semibold uppercase tracking-wider transition-colors ${activeMetric === m.key ? "text-cyan-300" : "text-slate-500"
               }`}>
               {m.label}
             </div>
             <div
-              className={`text-2xl font-bold transition-all duration-300 ${(activeMetric === m.key || hoveredMetric === m.key) ? `${m.hoverColor} ${m.glow} scale-110` : `${m.color} ${m.glow}`
+              className={`${compact ? 'text-xl' : 'text-2xl'} font-bold transition-all duration-300 ${(activeMetric === m.key || hoveredMetric === m.key) ? `${m.hoverColor} ${m.glow} scale-110` : `${m.color} ${m.glow}`
                 }`}
             >
               {m.value}
             </div>
-            {m.unit && <div className="text-[10px] text-slate-500">{m.unit}</div>}
-            {m.range && <div className="text-[8px] text-slate-500">{m.range}</div>}
+            {m.unit && <div className={`${compact ? 'text-[8px]' : 'text-[10px]'} text-slate-500`}>{m.unit}</div>}
+            {m.range && <div className={`${compact ? 'text-[6px]' : 'text-[8px]'} text-slate-500`}>{m.range}</div>}
           </div>
         ))}
       </div>}
 
-      {/* Bar Chart Section — visible in bar-only mode or full non-compact */}
+      {/* Bar Chart Section ΓÇö visible in bar-only mode or full non-compact */}
       {showBar && (
         <div
           className={`relative z-10 mb-4 flex min-h-0 flex-1 flex-col ${mode === "bar-only" ? "min-h-[160px]" : "min-h-[140px]"}`}
@@ -484,10 +476,10 @@ export function WaterQualityCard({
         </div>
       )}
 
-      {/* Embedded Live Time-Series Chart — visible in line-only mode or full non-compact */}
+      {/* Embedded Live Time-Series Chart ΓÇö visible in line-only mode or full non-compact */}
       {showLiveChart && (
         <div className={`relative z-10 flex-1 flex flex-col min-h-[160px] ${mode === "line-only" ? "" : "mt-4 border-t border-white/5 pt-4"}`}>
-          <div className="flex-1 h-[160px] min-h-[140px]">
+          <div className="flex-1 h-[160px] lg:min-h-[140px]">
             <Chart type="line" data={liveChartData} options={liveChartOptions as any} />
           </div>
         </div>

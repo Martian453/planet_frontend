@@ -1,25 +1,35 @@
-import React from 'react'
+"use client"
+import React, { useEffect, useState } from 'react'
 
 export function LoadingScreen() {
+  const [stars, setStars] = useState<{ left: string; top: string; animationDelay: string; animationDuration: string }[]>([])
+
+  useEffect(() => {
+    // Generate random star configurations only on the client after hydration
+    setStars(Array.from({ length: 70 }).map(() => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      animationDelay: `${Math.random() * 5}s`,
+      animationDuration: `${3 + Math.random() * 4}s`
+    })))
+  }, [])
+
   return (
     <div className="fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-slate-950 overflow-hidden">
       {/* Dynamic Background Stars - Increased Brightness */}
-      <div className="absolute inset-0 opacity-80">
-        <div className="absolute inset-0 animate-rotate-slow">
-          {Array.from({ length: 70 }).map((_, i) => (
-            <div
-              key={i}
-              className="absolute h-[3px] w-[3px] rounded-full bg-white animate-twinkle shadow-[0_0_8px_rgba(255,255,255,0.8)]"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 5}s`,
-                animationDuration: `${3 + Math.random() * 4}s`
-              }}
-            />
-          ))}
+      {stars.length > 0 && (
+        <div className="absolute inset-0 opacity-80">
+          <div className="absolute inset-0 animate-rotate-slow">
+            {stars.map((style, i) => (
+              <div
+                key={i}
+                className="absolute h-[3px] w-[3px] rounded-full bg-white animate-twinkle shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                style={style}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Light Rays / Glow Effects */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-emerald-500/10 blur-[120px] animate-pulse" />

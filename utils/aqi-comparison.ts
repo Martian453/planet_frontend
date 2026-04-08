@@ -37,7 +37,7 @@ export async function fetchGlobalAQData(): Promise<GlobalAQPoint[]> {
       parameter: loc.sensors?.[0]?.parameter?.name || 'pm25'
     }));
   } catch (error) {
-    console.error('Error fetching OpenAQ data:', error);
+    console.warn('OpenAQ data fetch failed (likely network or CORS constraint). Using fallback data.', error);
     // Return fallback major cities if API fails
     return [
       { id: 1, city: 'New York', country: 'US', lat: 40.7128, lng: -74.0060, aqi: 15, parameter: 'pm25' },

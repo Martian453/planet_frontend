@@ -83,7 +83,7 @@ export function RecentReadingsTable({
         </div>
       </div>
 
-      <div className="relative flex-1 min-h-0">
+      <div className="relative flex-1 min-h-0 my-3">
         <div ref={scrollRef} className="h-[140px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={yearlyData} margin={{ top: 10, right: 10, bottom: 6, left: 0 }}>

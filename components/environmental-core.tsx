@@ -156,7 +156,7 @@ export function SpeedometerGauge({
   const ny = cy - needleLen * Math.sin(needleRad);
 
   return (
-    <div className="flex flex-row items-center justify-between w-full h-full px-2 gap-1 scale-120">
+    <div className="flex flex-row items-start justify-between w-full h-full px-2 gap-1 scale-110 pt-9">
       {/* Gauge on the Left - Maximized Arc */}
       <div className="relative h-35 w-[85%] flex items-center justify-center overflow-visible">
         <svg viewBox="0 25 360 150" className="h-full w-full drop-shadow-[0_0_15px_rgba(30,41,59,0.3)]">
@@ -234,7 +234,7 @@ export function SpeedometerGauge({
       </div>
 
       {/* Vertical Info Bar on the Far Right - Small and Bold */}
-      <div className="flex flex-col justify-center gap-0.5 w-[19%] pl-1 mt-0.5">
+      <div className="flex flex-col justify-start gap-1 w-[22%] pl-1 mt-1">
         <div className="flex flex-col items-start py-0.04 border-b border-white/5">
           <div className="text-[8px] font-black uppercase tracking-[0.2em] text-slate-500 mb-0.5">Level</div>
           <div className="text-[13px] font-mono font-black text-cyan-400">

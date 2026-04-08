@@ -15,6 +15,8 @@ import {
     Legend,
     Cell,
 } from "recharts"
+import { useState, useMemo } from "react"
+import { generateWaveform, generateWaterHistory, generateTimeLabels, type TimeRange } from "@/utils/data-simulator"
 
 interface ChartModalProps {
     isOpen: boolean
@@ -25,6 +27,7 @@ interface ChartModalProps {
     onPollutantSelect: (pollutant: string | null) => void
     selectedWaterMetric: string | null
     onWaterMetricSelect: (metric: string | null) => void
+    isMotorOn?: boolean
 }
 
 const pollutantConfig: Record<string, { color: string; label: string }> = {
@@ -51,8 +54,61 @@ export function ChartModal({
     onPollutantSelect,
     selectedWaterMetric,
     onWaterMetricSelect,
+    isMotorOn = false
 }: ChartModalProps) {
-    if (!isOpen) return null
+    const [timeRange, setTimeRange] = useState<TimeRange>("1h")
+
+    // SIMULATION LOGIC: Mirror the tile behavior for expanded view
+    const simulatedData = useMemo(() => {
+        if (timeRange === "1h") return data;
+
+        const count = timeRange === "24h" ? 100 : 300;
+        const labels = generateTimeLabels(timeRange, count);
+
+        if (chartType === "aqi") {
+            const base = data?.[data.length - 1] || { pm25: 25, pm10: 55, co: 450, no2: 18, o3: 22, so2: 8 };
+            const pm25Arr = generateWaveform(base.pm25, timeRange, { volatility: 1 });
+            const pm10Arr = generateWaveform(base.pm10, timeRange, { volatility: 1.2 });
+            const coArr = generateWaveform(base.co, timeRange, { volatility: 0.8 });
+            const no2Arr = generateWaveform(base.no2, timeRange, { volatility: 0.9 });
+            const o3Arr = generateWaveform(base.o3, timeRange, { volatility: 1.1 });
+            const so2Arr = generateWaveform(base.so2, timeRange, { volatility: 0.7, spikes: true });
+
+            return labels.map((l, i) => {
+                const d = new Date(l);
+                return {
+                    time: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    pm25: pm25Arr[i],
+                    pm10: pm10Arr[i],
+                    co: coArr[i],
+                    no2: no2Arr[i],
+                    o3: o3Arr[i],
+                    so2: so2Arr[i],
+                };
+            });
+        } else if (chartType === "water") {
+            // Mock the specific structure generateWaterHistory expects
+            const currentData = {
+                level: data?.[data.length-1]?.level ?? 5.5,
+                ph: data?.[data.length-1]?.ph ?? 7.2,
+                tds: data?.[data.length-1]?.tds ?? 450
+            };
+            const history = generateWaterHistory(currentData as any, timeRange, isMotorOn, count, labels);
+            return labels.map((l, i) => {
+                const d = new Date(l);
+                return {
+                    time: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    level: history.level[i],
+                    ph: history.ph[i],
+                    tds: history.tds[i]
+                };
+            });
+        }
+        return data;
+    }, [data, timeRange, chartType, isMotorOn]);
+
+    const displayData = simulatedData;
+
 
     const visiblePollutants = selectedPollutant
         ? [selectedPollutant]
@@ -61,6 +117,8 @@ export function ChartModal({
     // Filter water data based on selected metric
     const waterMetrics = ["level", "ph", "tds"];
     const visibleWaterMetrics = selectedWaterMetric ? [selectedWaterMetric] : waterMetrics;
+
+    if (!isOpen) return null;
 
     return (
         <div
@@ -133,8 +191,22 @@ export function ChartModal({
                                 </div>
                                 <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-5 pointer-events-none" />
                                 
+                                <div className="absolute top-4 right-4 z-20 flex bg-slate-900/80 rounded-lg p-1 border border-white/10 shadow-lg">
+                                    {(["1h", "24h", "7d"] as const).map((r) => (
+                                        <button
+                                            key={r}
+                                            onClick={() => setTimeRange(r)}
+                                            className={`px-3 py-1 text-[10px] font-bold uppercase rounded transition-all ${timeRange === r
+                                                ? "bg-emerald-500/20 text-emerald-400 shadow-sm"
+                                                : "text-slate-500 hover:text-slate-300"
+                                                }`}
+                                        >
+                                            {r}
+                                        </button>
+                                    ))}
+                                </div>
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={data} margin={{ top: 40, right: 30, left: 0, bottom: 20 }}>
+                                    <LineChart data={displayData} margin={{ top: 40, right: 30, left: 0, bottom: 20 }}>
                                         <XAxis
                                             dataKey="time"
                                             tick={{ fill: "#64748b", fontSize: 10 }}
@@ -282,9 +354,27 @@ export function ChartModal({
                             )}
                         </div>
 
+                        <div className="flex items-center gap-4 mb-4">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Time Range:</span>
+                            <div className="flex bg-slate-900/50 rounded-lg p-1 border border-white/10">
+                                {(["1h", "24h", "7d"] as const).map((r) => (
+                                    <button
+                                        key={r}
+                                        onClick={() => setTimeRange(r)}
+                                        className={`px-4 py-1.5 text-xs font-bold uppercase rounded-md transition-all ${timeRange === r
+                                            ? "bg-cyan-500/20 text-cyan-400 shadow-sm"
+                                            : "text-slate-500 hover:text-slate-300"
+                                            }`}
+                                    >
+                                        {r}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         <div className="flex-1 min-h-0 bg-slate-900/30 rounded-2xl border border-white/5 p-4">
                             <ResponsiveContainer width="100%" height="100%">
-                                <ComposedChart data={data} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+                                <ComposedChart data={displayData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
                                     <XAxis
                                         dataKey="time"
                                         tick={{ fill: "#64748b", fontSize: 12 }}

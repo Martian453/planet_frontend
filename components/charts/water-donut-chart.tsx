@@ -27,13 +27,39 @@ export function WaterDonutChart({ waterData, transparent = false, sideBySide = f
             { name: "Loading...", value: 1, rawValue: 0, unit: "", color: "#334155" }
         ];
 
-        // Drivers of Water Quality Index
-        // These are normalized values for the donut representation
+        // Scientific scoring for the WQI analysis (normalized 0-100)
+        const purityScore = Math.max(0, 100 - (waterData.tds / 15));
         const scores = [
-            { name: "Purity", value: Math.max(0, 100 - (waterData.tds / 15)), rawValue: waterData.tds, unit: "ppm", color: "#34d399" },
-            { name: "Ph Balance", value: (7 - Math.abs(7 - waterData.ph)) * 14.2, rawValue: waterData.ph, unit: "pH", color: "#60a5fa" },
-            { name: "Stability", value: 85, rawValue: 85, unit: "%", color: "#a855f7" },
-            { name: "Turbidity", value: 92, rawValue: 0.4, unit: "NTU", color: "#fb923c" },
+            { 
+                name: "Purity", 
+                value: purityScore, 
+                rawValue: purityScore, 
+                unit: "%", 
+                color: "#34d399" 
+            },
+            {
+                name: "pH Balance",
+                // Centers 100% at pH 7.0; drops as it deviates
+                value: Math.max(0, (7 - Math.abs(7 - waterData.ph)) * 14.28),
+                rawValue: waterData.ph,
+                unit: "pH",
+                color: "#60a5fa"
+            },
+            {
+                name: "Stability",
+                value: 85,
+                rawValue: 85,
+                unit: "%",
+                color: "#a855f7"
+            },
+            {
+                name: "TDS",
+                // Proportional impact (normalized for donut display)
+                value: Math.min(100, (waterData.tds / 10)),
+                rawValue: waterData.tds,
+                unit: "ppm",
+                color: "#fb923c"
+            },
         ];
 
         return scores;
@@ -47,7 +73,7 @@ export function WaterDonutChart({ waterData, transparent = false, sideBySide = f
 
     return (
         <div className={`${transparent ? '' : 'card-vibrant bg-slate-900/40 rounded-2xl border border-blue-500/20 p-3'} h-full min-h-[160px] w-full flex flex-col backdrop-blur-md lg:backdrop-blur-xl relative overflow-hidden group`}>
-            <div className={`flex-1 w-full flex ${sideBySide ? 'flex-row items-center justify-between gap-1' : 'flex-col'} min-h-0 relative z-10`}>
+            <div className={`flex-1 w-full flex ${sideBySide ? 'flex-row items-start justify-between gap-1 pt-2' : 'flex-col'} min-h-0 relative z-10`}>
                 <div className={`${sideBySide ? 'w-[60%]' : 'w-full'} relative h-full min-h-[120px]`}>
                     {/* Center Text */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10">
@@ -64,7 +90,7 @@ export function WaterDonutChart({ waterData, transparent = false, sideBySide = f
                             <Pie
                                 data={data}
                                 innerRadius={sideBySide ? 32 : 47}
-                                outerRadius={sideBySide ? 45 : 62}
+                                outerRadius={sideBySide ? 52 : 62}
                                 paddingAngle={4}
                                 dataKey="value"
                                 onMouseEnter={onPieEnter}
@@ -92,7 +118,7 @@ export function WaterDonutChart({ waterData, transparent = false, sideBySide = f
                     </ResponsiveContainer>
                 </div>
 
-                <div className={`flex ${sideBySide ? 'flex-col items-start gap-1 w-[38%] pr-1' : 'flex-wrap justify-center gap-1.5 mt-1'} relative z-10`}>
+                <div className={`flex ${sideBySide ? 'flex-col items-center justify-center gap-1 w-[38%] pr-1 mt-15' : 'flex-wrap justify-center gap-0.5 mt-1'} relative z-10`}>
                     {data.map((entry, index) => (
                         <div
                             key={index}
@@ -100,10 +126,10 @@ export function WaterDonutChart({ waterData, transparent = false, sideBySide = f
                             onMouseEnter={() => setActiveIndex(index)}
                         >
                             <div className="flex items-center gap-1.5">
-                              <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color, boxShadow: `0 0 5px ${entry.color}` }} />
-                              <span className="text-[9px] font-black text-white/90 uppercase tracking-tighter truncate w-full">
-                                  {entry.name}
-                              </span>
+                                <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: entry.color, boxShadow: `0 0 5px ${entry.color}` }} />
+                                <span className="text-[9px] font-black text-white/90 uppercase tracking-tighter truncate w-full">
+                                    {entry.name}
+                                </span>
                             </div>
                         </div>
                     ))}

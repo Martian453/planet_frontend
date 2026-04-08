@@ -3,13 +3,14 @@
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, ReferenceLine, Legend } from "recharts"
 import { useMemo, useState } from "react"
 import { Maximize2 } from "lucide-react"
+import { generateWaveform, generateTimeLabels, type TimeRange } from "@/utils/data-simulator"
 
 interface MetricHistoryChartProps {
     data: any[] // Array of history objects { label, pm25, pm10, co, no2 }
     activeMetric: string | null
     onMetricSelect?: (metric: string | null) => void
-    timeRange: "1h" | "24h" | "7d"
-    onTimeRangeChange: (range: "1h" | "24h" | "7d") => void
+    timeRange: TimeRange
+    onTimeRangeChange: (range: TimeRange) => void
     compact?: boolean
     onExpand?: () => void
 }
@@ -20,36 +21,47 @@ export function MetricHistoryChart({ data, activeMetric, onMetricSelect, timeRan
 
     // Process data based on time range
     const chartData = useMemo(() => {
-        if (!data || data.length === 0) return [];
-
-        let filteredData = data;
-
-        // Filter based on time range
+        // For 1h, we prefer "real" data (or at least the data passed from parent)
         if (timeRange === "1h") {
-            filteredData = data.slice(-20); // Last 20 data points (~20 minutes if 1m interval)
-        } else if (timeRange === "24h") {
-            filteredData = data.slice(-288); // Last 288 points (~24 hours if 5m interval)
-        }
-        // 7d = all available data
-
-        return filteredData.map(d => {
-            // Parse ISO timestamp (sent by backend) and convert to local time
-            const rawLabel = d.label || d.time || "";
-            let displayTime = rawLabel;
-            if (rawLabel && rawLabel.includes("T")) {
-                // ISO format: parse and display in local time
-                try {
-                    displayTime = new Date(rawLabel).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                } catch { displayTime = rawLabel; }
-            }
-            return {
-                time: displayTime,
+            if (!data || data.length === 0) return [];
+            return data.slice(-20).map(d => ({
+                time: d.label && d.label.includes("T") 
+                    ? new Date(d.label).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    : d.label || d.time,
                 pm25: d.pm25 ?? 0,
                 pm10: d.pm10 ?? 0,
                 co: d.co ?? 0,
                 no2: d.no2 ?? 0,
                 o3: d.o3 ?? 0,
                 so2: d.so2 ?? 0,
+            }));
+        }
+
+        // For 24h and 7d, we generate synthetic wavy data for demonstration/analysis purposes
+        // as per user requirement for "waves in line graph as random data"
+        const count = timeRange === "24h" ? 100 : 300;
+        const labels = generateTimeLabels(timeRange, count);
+        
+        // Get baseline from current data or fallback
+        const base = data?.[data.length - 1] || { pm25: 25, pm10: 55, co: 450, no2: 18, o3: 22, so2: 8 };
+
+        const pm25Arr = generateWaveform(base.pm25, timeRange, { volatility: 1 });
+        const pm10Arr = generateWaveform(base.pm10, timeRange, { volatility: 1.2 });
+        const coArr = generateWaveform(base.co, timeRange, { volatility: 0.8 });
+        const no2Arr = generateWaveform(base.no2, timeRange, { volatility: 0.9 });
+        const o3Arr = generateWaveform(base.o3, timeRange, { volatility: 1.1 });
+        const so2Arr = generateWaveform(base.so2, timeRange, { volatility: 0.7, spikes: true });
+
+        return labels.map((l, i) => {
+            const d = new Date(l);
+            return {
+                time: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                pm25: pm25Arr[i],
+                pm10: pm10Arr[i],
+                co: coArr[i],
+                no2: no2Arr[i],
+                o3: o3Arr[i],
+                so2: so2Arr[i],
             };
         });
     }, [data, timeRange]);
@@ -62,6 +74,7 @@ export function MetricHistoryChart({ data, activeMetric, onMetricSelect, timeRan
         { key: 'no2', label: 'NO2', color: '#a855f7' },    // Purple
         { key: 'so2', label: 'SO2', color: '#f43f5e' },    // Rose
     ]
+
 
     // Sync activeMetric with activeLines
     useMemo(() => {
