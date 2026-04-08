@@ -11,7 +11,8 @@ import { MetricHistoryChart } from "@/components/charts/aqi-forecast-chart"
 import { RecentReadingsTable, RecentReadingsExpandModal } from "@/components/recent-readings-table"
 import { ChartModal } from "@/components/chart-modal"
 import { AQIPollutantHub } from "@/components/aqi-pollutant-hub"
-import { AnalysisControlSplit } from "@/components/analysis-control-split"
+import { WaterAnalysisSplit } from "@/components/analysis/water-split"
+import { BorewellHealthIndex } from "@/components/analysis/health-index"
 import { BorewellMonitorCard } from "@/components/borewell-monitor-card"
 import { AiSummarizerCard } from "@/components/ai-summarizer-card"
 import dynamic from "next/dynamic"
@@ -51,9 +52,9 @@ function timeLabelNow() {
     return new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
 }
 
-// Dynamically import Leaflet map
-const LeafletMapCard = dynamic(
-    () => import("@/components/leaflet-map-card").then((mod) => mod.LeafletMapCard),
+// Dynamically import Global Globe
+const GlobalComparativeGlobe = dynamic(
+    () => import("@/components/globe/comparative-globe").then((mod) => mod.GlobalComparativeGlobe),
     { ssr: false }
 )
 
@@ -772,27 +773,32 @@ export function PrivateDashboard() {
                     {/* View Switcher - Standard window scrolling on mobile for stability */}
                     <main className="p-2 lg:flex-1 lg:overflow-hidden flex flex-col">
                         {activeView === "dashboard" ? (
-                            <div className="flex flex-col lg:grid lg:h-full lg:grid-cols-[28%_40%_32%] lg:grid-rows-[32%_33%_35%] gap-4 lg:gap-1.5">
+                            <div className="flex flex-col lg:grid lg:h-full lg:grid-cols-[28%_40%_32%] lg:grid-rows-[32%_33%_35%] gap-4 lg:gap-2">
 
-                                {/* ═══ LEFT COLUMN: Spanning Row 1 & 2 ═══ */}
-                                <div className="lg:col-start-1 lg:row-start-1 lg:row-span-2 min-h-[450px] lg:min-h-0 overflow-hidden">
-                                    <AQIPollutantHub
-                                        data={safeAirData}
-                                        activeMetric={selectedPollutant}
-                                        onMetricSelect={handleTileClick}
-                                        isOffline={isAirOffline}
-                                    />
+                                {/* ═══ ROW 1: THE ENGINE ═══ */}
+                                {/* Top Left: Borewell Monitor */}
+                                <div className="lg:col-start-1 lg:row-start-1 min-h-[300px] lg:min-h-0 overflow-hidden">
+                                     <BorewellMonitorCard />
                                 </div>
 
-                                {/* ═══ COLUMN 2 (MIDDLE) ═══ */}
-                                {/* Top Middle: Split Analysis & Control */}
-                                <div className="lg:col-start-2 lg:row-start-1 min-h-0 lg:min-h-0 overflow-hidden">
-                                    <AnalysisControlSplit
-                                        airData={safeAirData}
+                                {/* Top Middle: Split Analysis (Speedometer + Pie) */}
+                                <div className="lg:col-start-2 lg:row-start-1 min-h-[300px] lg:min-h-0 overflow-hidden">
+                                    <WaterAnalysisSplit
                                         waterData={safeWaterData}
                                         maxWaterLevel={maxWaterLevelRecorded}
                                         waterStatus={waterStatus}
                                     />
+                                </div>
+
+                                {/* Top Right: Global Comparative Globe */}
+                                <div className="lg:col-start-3 lg:row-start-1 min-h-[300px] lg:min-h-0 overflow-hidden rounded-xl border border-white/5 bg-slate-900/20 backdrop-blur-md">
+                                    <GlobalComparativeGlobe />
+                                </div>
+
+                                {/* ═══ ROW 2: THE TRENDS ═══ */}
+                                {/* Middle Left: Borewell System Health Index (Radar) */}
+                                <div className="lg:col-start-1 lg:row-start-2 min-h-[300px] lg:min-h-0 overflow-hidden">
+                                     <BorewellHealthIndex />
                                 </div>
 
                                 {/* Row 2 Middle: Unified Water Trend */}
@@ -809,9 +815,35 @@ export function PrivateDashboard() {
                                     />
                                 </div>
 
-                                {/* Row 3 Middle: Sensor Status */}
+                                {/* Middle Right: Yearly Water Level Comparison (Fixed) */}
+                                <div className="lg:col-start-3 lg:row-start-2 min-h-[250px] lg:min-h-0 overflow-hidden">
+                                    <RecentReadingsTable
+                                        waterLevels={historicalReadings.waterLevels}
+                                        aqiValues={historicalReadings.aqiValues}
+                                        labels={historicalReadings.labels}
+                                        period={readingsPeriod}
+                                        onPeriodChange={setReadingsPeriod}
+                                        onExpand={() => setReadingsModalOpen(true)}
+                                        yearlyLabels={yearlyWaterComparison.labels}
+                                        yearlyWaterLevels={yearlyWaterComparison.waterLevels}
+                                    />
+                                </div>
+
+                                {/* ═══ ROW 3: THE INTELLIGENCE ═══ */}
+                                {/* Bottom Left: AQI Pollutant Level (Compact/Expand) */}
+                                <div className="lg:col-start-1 lg:row-start-3 min-h-[350px] lg:min-h-0 overflow-hidden">
+                                    <AQIPollutantHub
+                                        data={safeAirData}
+                                        activeMetric={selectedPollutant}
+                                        onMetricSelect={handleTileClick}
+                                        isOffline={isAirOffline}
+                                        mode="compact"
+                                    />
+                                </div>
+
+                                {/* Bottom Middle: Sensor Status */}
                                 <div className="lg:col-start-2 lg:row-start-3 min-h-0 lg:min-h-0 overflow-hidden">
-                                <div className="card-vibrant relative flex h-auto lg:h-full flex-col overflow-hidden rounded-xl bg-slate-900/40 backdrop-blur-md lg:backdrop-blur-xl border border-white/5 p-3">
+                                    <div className="card-vibrant relative flex h-auto lg:h-full flex-col overflow-hidden rounded-xl bg-slate-900/40 backdrop-blur-md lg:backdrop-blur-xl border border-white/5 p-3">
                                         <h3 className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 border-b border-white/5 pb-1">Sensor Status</h3>
                                         <div className="space-y-1.5">
                                             {myDevices.map((dev) => (
@@ -831,7 +863,7 @@ export function PrivateDashboard() {
                                                         ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-400'
                                                         : 'border-slate-500/30 bg-slate-500/20 text-slate-400'
                                                         }`}>
-                                                        {dev.status?.toUpperCase() === 'ONLINE' ? '● ONLINE' : '○ OFFLINE'}
+                                                        {dev.status?.toUpperCase() === 'ONLINE' ? 'ΓùÅ ONLINE' : 'Γùï OFFLINE'}
                                                     </div>
                                                 </div>
                                             ))}
@@ -839,34 +871,9 @@ export function PrivateDashboard() {
                                     </div>
                                 </div>
 
-                                {/* ═══ COLUMN 3 (RIGHT): Metrics ═══ */}
-                                {/* Row 2 Right: Yearly Water Level Comparison */}
-                                <div className="lg:col-start-3 lg:row-start-2 min-h-[250px] lg:min-h-0 overflow-hidden">
-                                    <RecentReadingsTable
-                                        waterLevels={historicalReadings.waterLevels}
-                                        aqiValues={historicalReadings.aqiValues}
-                                        labels={historicalReadings.labels}
-                                        period={readingsPeriod}
-                                        onPeriodChange={setReadingsPeriod}
-                                        onExpand={() => setReadingsModalOpen(true)}
-                                        yearlyLabels={yearlyWaterComparison.labels}
-                                        yearlyWaterLevels={yearlyWaterComparison.waterLevels}
-                                    />
-                                </div>
-
-                                {/* Row 3 Right: AI Summarizer */}
+                                {/* Bottom Right: AI Summarizer (Fixed) */}
                                 <div className="lg:col-start-3 lg:row-start-3 min-h-[350px] lg:min-h-0 overflow-hidden">
                                     <AiSummarizerCard />
-                                </div>
-
-                                {/* ═══ BOTTOM LEFT (Row 3, Col 1): Borewell Monitor ═══ */}
-                                <div className="lg:col-start-1 lg:row-start-3 min-h-[350px] lg:min-h-0 overflow-hidden">
-                                    <BorewellMonitorCard />
-                                </div>
-
-                                {/* ═══ COLUMN 3 (RIGHT): Map - Moved to bottom on mobile ═══ */}
-                                <div className="lg:col-start-3 lg:row-start-1 min-h-[300px] lg:min-h-0 overflow-hidden rounded-xl">
-                                    <LeafletMapCard locations={Object.values(locationsStatus)} />
                                 </div>
 
                             </div>
