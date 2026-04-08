@@ -713,13 +713,13 @@ export function PrivateDashboard() {
                     <div className="absolute inset-0 bg-gradient-to-br from-[#0a0520] via-[#050511] to-[#000208]" />
                     {isSystemOnline && (
                         <>
-                            <div className="absolute h-[600px] w-[600px] rounded-full bg-gradient-to-br from-emerald-600/20 via-cyan-600/10 to-transparent blur-[100px]" style={{ left: `calc(15% + ${mousePosition.x}px)`, top: `calc(15% + ${mousePosition.y}px)`, transition: "left 0.3s ease-out, top 0.3s ease-out" }} />
-                            <div className="animation-delay-2000 absolute h-[500px] w-[500px] rounded-full bg-gradient-to-br from-purple-600/15 via-indigo-600/10 to-transparent blur-[100px]" style={{ right: `calc(10% + ${-mousePosition.x}px)`, top: `calc(20% + ${-mousePosition.y}px)`, transition: "right 0.3s ease-out, top 0.3s ease-out" }} />
+                            <div className="hidden lg:block absolute h-[600px] w-[600px] rounded-full bg-gradient-to-br from-emerald-600/20 via-cyan-600/10 to-transparent blur-[100px]" style={{ left: `calc(15% + ${mousePosition.x}px)`, top: `calc(15% + ${mousePosition.y}px)`, transition: "left 0.3s ease-out, top 0.3s ease-out" }} />
+                            <div className="hidden lg:block animation-delay-2000 absolute h-[500px] w-[500px] rounded-full bg-gradient-to-br from-purple-600/15 via-indigo-600/10 to-transparent blur-[100px]" style={{ right: `calc(10% + ${-mousePosition.x}px)`, top: `calc(20% + ${-mousePosition.y}px)`, transition: "right 0.3s ease-out, top 0.3s ease-out" }} />
                         </>
                     )}
                     <div className="absolute inset-0 opacity-70">
                         {stars.map((star, i) => (
-                            <div key={i} className={`absolute h-[2px] w-[2px] rounded-full bg-white ${isSystemOnline ? 'animate-twinkle' : ''}`} style={{ left: star.left, top: star.top, animationDelay: star.delay, animationDuration: star.duration }} />
+                            <div key={i} className={`absolute h-[2px] w-[2px] rounded-full bg-white ${isSystemOnline ? 'lg:animate-twinkle' : ''}`} style={{ left: star.left, top: star.top, animationDelay: star.delay, animationDuration: star.duration }} />
                         ))}
                     </div>
                 </div>
@@ -776,12 +776,12 @@ export function PrivateDashboard() {
                     </header>
 
                     {/* View Switcher - Standard window scrolling on mobile for stability */}
-                    <main className="flex-1 overflow-hidden p-2">
+                    <main className="flex-1 overflow-x-hidden overflow-y-auto lg:overflow-hidden p-2">
                         {activeView === "dashboard" ? (
-                            <div className="grid h-full grid-cols-[28%_40%_32%] grid-rows-[35%_35%_30%] gap-2">
+                            <div className="flex flex-col lg:grid lg:h-full lg:grid-cols-[28%_40%_32%] lg:grid-rows-[35%_35%_30%] gap-4 lg:gap-2">
 
                                 {/* Top Left: Borewell Monitor */}
-                                <div className="col-start-1 row-start-1">
+                                <div className="lg:col-start-1 lg:row-start-1 min-h-[250px] lg:min-h-0">
                                     <BorewellMonitorCard
                                         isMotorOn={isMotorOn}
                                         onMotorToggle={() => setIsMotorOn(!isMotorOn)}
@@ -797,7 +797,7 @@ export function PrivateDashboard() {
                                 </div>
 
                                 {/* Top Middle: Split Analysis (Speedometer + Pie) */}
-                                <div className="col-start-2 row-start-1 overflow-hidden">
+                                <div className="lg:col-start-2 lg:row-start-1 overflow-hidden min-h-[350px] lg:min-h-0">
                                     <WaterAnalysisSplit
                                         waterData={safeWaterData}
                                         maxWaterLevel={maxWaterLevel}
@@ -806,7 +806,7 @@ export function PrivateDashboard() {
                                 </div>
 
                                 {/* Top Right: Global Comparative Globe */}
-                                <div className="col-start-3 row-start-1 overflow-hidden rounded-xl border border-white/5 bg-slate-900/20 backdrop-blur-md">
+                                <div className="lg:col-start-3 lg:row-start-1 overflow-hidden rounded-xl border border-white/5 bg-slate-900/20 backdrop-blur-md min-h-[350px] lg:min-h-0">
                                     <GlobalComparativeGlobe
                                         userAQI={calculateAQI({
                                             ...safeAirData,
@@ -820,12 +820,12 @@ export function PrivateDashboard() {
 
                                 {/* ═══ ROW 2: THE TRENDS ═══ */}
                                 {/* Middle Left: Borewell System Health Index (Radar) */}
-                                <div className="col-start-1 row-start-2 overflow-hidden">
+                                <div className="lg:col-start-1 lg:row-start-2 overflow-hidden min-h-[300px] lg:min-h-0">
                                     <BorewellHealthIndex />
                                 </div>
 
                                 {/* Row 2 Middle: Unified Water Trend */}
-                                <div className="col-start-2 row-start-2 overflow-hidden">
+                                <div className="lg:col-start-2 lg:row-start-2 overflow-hidden min-h-[350px] lg:min-h-0">
                                     <WaterQualityCard
                                         data={safeWaterData}
                                         activeMetric={selectedWaterMetric}
@@ -840,7 +840,7 @@ export function PrivateDashboard() {
                                 </div>
 
                                 {/* Middle Right: Yearly Water Level Comparison (Fixed) */}
-                                <div className="col-start-3 row-start-2 overflow-hidden">
+                                <div className="lg:col-start-3 lg:row-start-2 overflow-hidden min-h-[300px] lg:min-h-0">
                                     <RecentReadingsTable
                                         waterLevels={historicalReadings.waterLevels}
                                         aqiValues={historicalReadings.aqiValues}
@@ -854,7 +854,7 @@ export function PrivateDashboard() {
                                 </div>
 
                                 {/* Bottom Left: AQI Pollutant Hub (Compact/Expand) */}
-                                <div className="col-start-1 row-start-3 h-full flex flex-col overflow-hidden">
+                                <div className="lg:col-start-1 lg:row-start-3 h-full flex flex-col overflow-hidden min-h-[300px] lg:min-h-0">
                                     <AQIPollutantHub
                                         data={safeAirData}
                                         activeMetric={selectedPollutant}
@@ -867,8 +867,8 @@ export function PrivateDashboard() {
                                 </div>
 
                                 {/* Bottom Middle: Sensor Status */}
-                                <div className="col-start-2 row-start-3 h-full flex flex-col overflow-hidden">
-                                    <div className="relative flex h-full flex-col rounded-xl bg-slate-900/40 backdrop-blur-xl border border-white/5 p-3 overflow-hidden">
+                                <div className="lg:col-start-2 lg:row-start-3 h-full flex flex-col overflow-hidden min-h-[250px] lg:min-h-0">
+                                    <div className="relative flex h-full flex-col rounded-xl bg-slate-900/40 backdrop-blur-md lg:backdrop-blur-xl border border-white/5 p-3 overflow-hidden">
                                         <h3 className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 border-b border-white/5 pb-1 shrink-0">Sensor Status</h3>
                                         <div className="flex flex-col gap-1.5 flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10">
                                             {myDevices.map((dev) => (
@@ -900,7 +900,7 @@ export function PrivateDashboard() {
                                 </div>
 
                                 {/* Bottom Right: AI Summarizer (Fixed) */}
-                                <div className="col-start-3 row-start-3 h-full flex flex-col overflow-hidden">
+                                <div className="lg:col-start-3 lg:row-start-3 h-full flex flex-col overflow-hidden min-h-[250px] lg:min-h-0">
                                     <AiSummarizerCard />
                                 </div>
 

@@ -179,10 +179,10 @@ export function GlobalComparativeGlobe({
       </div>
 
       {/* ── MAIN BODY: Globe (60%) + Strip (40%) ──────── */}
-      <div className="flex-1 flex flex-row min-h-0 w-full">
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0 w-full">
 
         {/* Globe (60%) */}
-        <div ref={containerRef} className="w-[60%] relative min-h-0 overflow-hidden">
+        <div ref={containerRef} className="w-full h-[200px] lg:h-auto lg:w-[60%] relative lg:min-h-0 overflow-hidden">
           <Globe
             ref={globeEl}
             {...globeConfig}
@@ -211,8 +211,8 @@ export function GlobalComparativeGlobe({
         </div>
 
         {/* ── COMPARISON STRIP (40%) ─────────────────── */}
-        <div className="w-[40%] flex flex-col justify-center gap-1.5 pr-2 pl-1 py-2 border-l border-white/[0.06]">
-          <span className="text-[7px] font-black uppercase tracking-[0.25em] text-slate-500 px-1 mb-0.5">Comparative</span>
+        <div className="w-full lg:w-[40%] flex flex-col justify-center gap-1.5 px-2 lg:pr-2 lg:pl-1 py-2 border-t lg:border-t-0 lg:border-l border-white/[0.06]">
+          <span className="text-[7px] font-black uppercase tracking-[0.25em] text-slate-500 px-1 mb-0.5 mt-1 lg:mt-0">Comparative</span>
 
           {comparisonItems.map((item, i) => {
             const cat = getAQICategory(item.value)

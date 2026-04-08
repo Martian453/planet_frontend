@@ -25,7 +25,7 @@ export function BorewellMonitorCard({ isMotorOn = true, onMotorToggle, data }: B
   };
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden rounded-2xl p-4 bg-[rgba(6,10,30,0.4)] backdrop-blur-[32px] border border-white/5 shadow-[0_6px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(124,255,154,0.05),0_0_40px_rgba(15,23,42,0.6)] transition-all duration-200">
+    <div className="relative flex h-full flex-col overflow-hidden rounded-2xl p-4 bg-[rgba(6,10,30,0.4)] backdrop-blur-md lg:backdrop-blur-[32px] border border-white/5 shadow-lg lg:shadow-[0_6px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.05),0_0_0_1px_rgba(124,255,154,0.05),0_0_40px_rgba(15,23,42,0.6)] transition-all duration-200">
       {/* Background Glow */}
       <div className="absolute -left-20 -top-20 h-40 w-40 rounded-full blur-[80px] bg-cyan-500/10 pointer-events-none transition-colors duration-700" />
 
@@ -56,7 +56,7 @@ export function BorewellMonitorCard({ isMotorOn = true, onMotorToggle, data }: B
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 relative mt-[9px]">
         {isMotorOn ? (
-          <div className="min-h-[105px] grid grid-cols-4 gap-2">
+          <div className="min-h-[105px] grid grid-cols-2 lg:grid-cols-4 gap-2">
             {/* BOX 1: FLOW */}
             <div className="flex flex-col justify-between rounded-[20px] bg-[#0f1522] border border-white/5 p-3 relative overflow-hidden animate-in fade-in zoom-in-95 duration-500 fill-mode-both">
               <div className="flex items-start justify-between">
