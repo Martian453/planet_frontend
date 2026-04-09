@@ -72,6 +72,7 @@ export function PrivateDashboard() {
     const [readingsPeriod, setReadingsPeriod] = useState<HistoricalPeriod>("week")
     const [readingsModalOpen, setReadingsModalOpen] = useState(false)
     const [isMotorOn, setIsMotorOn] = useState(true) // Lifted motor state
+    const [motorRunTime, setMotorRunTime] = useState(4.5 * 3600) // Default start time in seconds (4.5 hours)
 
     // HYDRATION GUARD INITIALIZATION
     const [mounted, setMounted] = useState(false);
@@ -103,11 +104,16 @@ export function PrivateDashboard() {
     const [lastWaterTime, setLastWaterTime] = useState(0);
     const [currentTime, setCurrentTime] = useState(Date.now());
 
-    // Update 'currentTime' every second for offline calc
+    // Update 'currentTime' every second for offline calc AND increment motor timer if ON
     useEffect(() => {
-        const interval = setInterval(() => setCurrentTime(Date.now()), 1000);
+        const interval = setInterval(() => {
+            setCurrentTime(Date.now());
+            if (isMotorOn && demoMode) {
+                setMotorRunTime(prev => prev + 1);
+            }
+        }, 1000);
         return () => clearInterval(interval);
-    }, []);
+    }, [isMotorOn, demoMode]);
 
     const isAirOffline = currentTime - lastAirTime > 4000000;
     const isWaterOffline = currentTime - lastWaterTime > 4000000;
@@ -790,7 +796,7 @@ export function PrivateDashboard() {
                                             efficiency: isMotorOn ? rand(68, 85).toFixed(0) : 0,
                                             voltage: rand(228, 242).toFixed(0),
                                             current: waterData?.irms?.toFixed(1) ?? 0,
-                                            runTime: "4.5",
+                                            runTime: (motorRunTime / 3600).toFixed(2),
                                             liters: isMotorOn ? "850" : "0"
                                         } : undefined}
                                     />
