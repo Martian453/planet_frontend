@@ -91,7 +91,7 @@ export function ChartModal({
             const currentData = {
                 level: data?.[data.length-1]?.level ?? 5.5,
                 ph: data?.[data.length-1]?.ph ?? 7.2,
-                tds: data?.[data.length-1]?.tds ?? 450
+                tds: data?.[data.length-1]?.tds ?? 8
             };
             const history = generateWaterHistory(currentData as any, timeRange, isMotorOn, count, labels);
             return labels.map((l, i) => {

@@ -473,7 +473,7 @@ export function PrivateDashboard() {
         setWaterData(prev => prev ?? ({
             level: rand(2, 12),
             ph: rand(6.8, 8.2),
-            tds: rand(180, 800),
+            tds: rand(1, 9),
             irms: rand(0.5, 9),
             pump_status: "MID",
             chartData: { labels: [], level: [], ph: [], tds: [] }
@@ -519,7 +519,7 @@ export function PrivateDashboard() {
 
             setWaterData(prev => {
                 const p = prev ?? ({
-                    level: 6.5, ph: 7.4, tds: 420, irms: 3.2, pump_status: "MID",
+                    level: 6.5, ph: 7.4, tds: 8, irms: 3.2, pump_status: "MID",
                     chartData: { labels: [], level: [], ph: [], tds: [] }
                 });
 

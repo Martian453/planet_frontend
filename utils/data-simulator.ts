@@ -135,7 +135,7 @@ export function generateWaterHistory(
   const tdsArr = generateWaveform(baseValues.tds, range, {
     volatility: 0.8,
     spikes: range === "7d"
-  });
+  }).map(val => Math.min(val, 9.9));
 
   // Truncate/pad to exact count if needed
   return {
