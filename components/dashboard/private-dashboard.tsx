@@ -71,8 +71,12 @@ export function PrivateDashboard() {
     const [timeRange, setTimeRange] = useState<"1h" | "24h" | "7d">("1h");
     const [readingsPeriod, setReadingsPeriod] = useState<HistoricalPeriod>("week")
     const [readingsModalOpen, setReadingsModalOpen] = useState(false)
-    const [isMotorOn, setIsMotorOn] = useState(true) // Lifted motor state
-    const [motorRunTime, setMotorRunTime] = useState(4.5 * 3600) // Default start time in seconds (4.5 hours)
+    const [activeBorewellIndex, setActiveBorewellIndex] = useState(0);
+    const [borewells, setBorewells] = useState([
+        { id: 1, isMotorOn: true, runTime: 4.5 * 3600 },
+        { id: 2, isMotorOn: false, runTime: 1.2 * 3600 },
+        { id: 3, isMotorOn: false, runTime: 0.8 * 3600 },
+    ]);
 
     // HYDRATION GUARD INITIALIZATION
     const [mounted, setMounted] = useState(false);
@@ -104,16 +108,21 @@ export function PrivateDashboard() {
     const [lastWaterTime, setLastWaterTime] = useState(0);
     const [currentTime, setCurrentTime] = useState(Date.now());
 
-    // Update 'currentTime' every second for offline calc AND increment motor timer if ON
+    // Update 'currentTime' every second for offline calc AND increment motor timers for all ON units
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentTime(Date.now());
-            if (isMotorOn && demoMode) {
-                setMotorRunTime(prev => prev + 1);
+            if (demoMode) {
+                setBorewells(prev => prev.map(bw => 
+                    bw.isMotorOn ? { ...bw, runTime: bw.runTime + 1 } : bw
+                ));
             }
         }, 1000);
         return () => clearInterval(interval);
-    }, [isMotorOn, demoMode]);
+    }, [demoMode]);
+
+    const isMotorOn = borewells[activeBorewellIndex].isMotorOn;
+    const motorRunTime = borewells[activeBorewellIndex].runTime;
 
     const isAirOffline = currentTime - lastAirTime > 4000000;
     const isWaterOffline = currentTime - lastWaterTime > 4000000;
@@ -587,6 +596,12 @@ export function PrivateDashboard() {
         return () => clearInterval(interval);
     }, [demoMode, currentLocation, isSystemOnline, isMotorOn]);
 
+    const handleMotorToggle = (index: number) => {
+        setBorewells(prev => prev.map((bw, i) => 
+            i === index ? { ...bw, isMotorOn: !bw.isMotorOn } : bw
+        ));
+    };
+
     // Visual Effects... (Existing)
     const [stars, setStars] = useState<Array<{ left: string; top: string; delay: string; duration: string }>>([])
     useEffect(() => {
@@ -789,15 +804,17 @@ export function PrivateDashboard() {
                                 {/* Top Left: Borewell Monitor */}
                                 <div className="lg:col-start-1 lg:row-start-1 min-h-[250px] lg:min-h-0">
                                     <BorewellMonitorCard
+                                        activeBorewellIndex={activeBorewellIndex}
+                                        onBorewellChange={setActiveBorewellIndex}
                                         isMotorOn={isMotorOn}
-                                        onMotorToggle={() => setIsMotorOn(!isMotorOn)}
+                                        onMotorToggle={() => handleMotorToggle(activeBorewellIndex)}
                                         data={demoMode ? {
-                                            flowRate: isMotorOn ? rand(35, 55).toFixed(1) : 0,
+                                            flowRate: isMotorOn ? rand(35 + activeBorewellIndex * 5, 55 + activeBorewellIndex * 5).toFixed(1) : 0,
                                             efficiency: isMotorOn ? rand(68, 85).toFixed(0) : 0,
                                             voltage: rand(228, 242).toFixed(0),
-                                            current: waterData?.irms?.toFixed(1) ?? 0,
+                                            current: (activeBorewellIndex === 0 ? (waterData?.irms ?? 0) : rand(4, 9)).toFixed(1),
                                             runTime: (motorRunTime / 3600).toFixed(2),
-                                            liters: isMotorOn ? "850" : "0"
+                                            liters: isMotorOn ? (800 + activeBorewellIndex * 100).toString() : "0"
                                         } : undefined}
                                     />
                                 </div>
@@ -827,7 +844,7 @@ export function PrivateDashboard() {
                                 {/* ═══ ROW 2: THE TRENDS ═══ */}
                                 {/* Middle Left: Borewell System Health Index (Radar) */}
                                 <div className="lg:col-start-1 lg:row-start-2 overflow-hidden min-h-[300px] lg:min-h-0">
-                                    <BorewellHealthIndex />
+                                    <BorewellHealthIndex leakStatus={isMotorOn ? "Nominal" : "Standby"} />
                                 </div>
 
                                 {/* Row 2 Middle: Unified Water Trend */}

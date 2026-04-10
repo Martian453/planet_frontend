@@ -16,12 +16,13 @@ interface HealthPillar {
 // ── Maintenance Prediction ──────────────────────────────────────
 interface MaintenanceItem {
   label: string
-  daysLeft: number
+  daysLeft?: number
   icon: React.ReactNode
   urgency: 'low' | 'medium' | 'high'
+  value?: string
 }
 
-export function BorewellHealthIndex() {
+export function BorewellHealthIndex({ leakStatus = "Nominal" }: { leakStatus?: string }) {
   // ── BSHI Calculation ──────────────────────────────────────
   // In production, these values would come from sensor data props.
   // Weights: Mechanical (35%), Hydrological (35%), Bio-Chemical (30%)
@@ -74,7 +75,13 @@ export function BorewellHealthIndex() {
       icon: <Timer className="h-3 w-3 text-amber-400" />,
       urgency: 'medium' as const,
     },
-  ], [])
+    {
+      label: "Leak Detection",
+      value: leakStatus,
+      icon: <Droplets className={`h-3 w-3 ${leakStatus === 'Nominal' ? 'text-emerald-400' : 'text-slate-400'}`} />,
+      urgency: (leakStatus === 'Nominal' ? 'low' : 'medium') as any,
+    },
+  ], [leakStatus])
 
   // ── Helper: Get bar color based on score ──────────────────
   const getBarGradient = (score: number) => {
@@ -156,7 +163,7 @@ export function BorewellHealthIndex() {
                 <div className="flex flex-col">
                   <span className="text-[8px] font-bold text-slate-300 leading-tight">{item.label}</span>
                   <span className={`text-[10px] font-mono font-black leading-tight ${urgencyColor}`}>
-                    ~{item.daysLeft} days
+                    {item.daysLeft !== undefined ? `~${item.daysLeft} days` : item.value}
                   </span>
                 </div>
               </div>
