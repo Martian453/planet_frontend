@@ -114,18 +114,40 @@ export function BorewellHealthIndex({ leakStatus = "Nominal" }: { leakStatus?: s
         {pillars.map((pillar, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-1.5 group/bar">
             {/* Bar Container */}
-            <div className="flex-1 w-full max-w-[28px] mx-auto relative rounded-lg bg-slate-800/60 border border-white/[0.04] overflow-hidden">
+            <div className="flex-1 w-full max-w-[28px] mx-auto relative rounded-lg bg-slate-950/80 border border-white/[0.08] overflow-hidden group-hover/bar:border-white/20 transition-colors">
+              
+              {/* Internal Grid/Scale Pattern */}
+              <div className="absolute inset-0 opacity-[0.12] bg-[length:100%_4px] bg-[linear-gradient(to_bottom,transparent_3px,rgba(255,255,255,0.5)_3px)] pointer-events-none" />
+
               {/* Fill Bar (animates from bottom) */}
               <div
-                className={`absolute bottom-0 left-0 right-0 rounded-lg bg-gradient-to-t ${getBarGradient(pillar.score)} transition-all duration-1000 ease-out`}
+                className={`absolute bottom-0 left-0 right-0 rounded-b-lg bg-gradient-to-t ${getBarGradient(pillar.score)} transition-all duration-1000 ease-[cubic-bezier(0.34,1.56,0.64,1)]`}
                 style={{
                   height: `${pillar.score}%`,
-                  boxShadow: `0 0 12px ${pillar.glowColor}, inset 0 1px 0 rgba(255,255,255,0.15)`,
+                  boxShadow: `0 0 20px ${pillar.glowColor}44`,
                 }}
-              />
+              >
+                {/* Shimmer / Liquid Flow Effect */}
+                <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/10 to-transparent -translate-y-full animate-[shimmer_3s_infinite]" />
+                
+                {/* Laser Cap (The bright top line) */}
+                <div 
+                  className="absolute top-0 left-0 right-0 h-[1.5px] z-20"
+                  style={{ 
+                    backgroundColor: pillar.color,
+                    boxShadow: `0 0 10px ${pillar.color}, 0 0 20px ${pillar.color}` 
+                  }}
+                >
+                  <div className="absolute top-1/2 left-0 right-0 h-[6px] bg-white/30 -translate-y-1/2 blur-sm" />
+                </div>
+
+                {/* Vertical Depth Highlight */}
+                <div className="absolute inset-y-0 left-0 w-[35%] bg-gradient-to-r from-white/15 to-transparent pointer-events-none" />
+              </div>
+
               {/* Score overlay */}
-              <div className="absolute inset-0 flex items-start justify-center pt-1.5">
-                <span className="text-[9px] font-mono font-black text-white/90 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+              <div className="absolute inset-0 flex items-start justify-center pt-2.5 z-30">
+                <span className="text-[10px] font-bold text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)] tabular-nums transition-transform group-hover/bar:scale-110">
                   {pillar.score}
                 </span>
               </div>
@@ -133,16 +155,16 @@ export function BorewellHealthIndex({ leakStatus = "Nominal" }: { leakStatus?: s
 
             {/* Label + Icon */}
             <div className="flex flex-col items-center gap-0.5">
-              <div style={{ color: pillar.color }}>{pillar.icon}</div>
-              <span className="text-[8px] font-black uppercase tracking-[0.15em] text-slate-400 text-center leading-tight">
+              <div className="transition-transform group-hover/bar:scale-125 duration-300" style={{ color: pillar.color }}>{pillar.icon}</div>
+              <span className="text-[8px] font-black uppercase tracking-[0.14em] text-slate-500 text-center leading-tight group-hover:text-slate-300 transition-colors">
                 {pillar.label}
               </span>
               <span
-                className="text-[6px] font-black uppercase tracking-wider px-1 py-px rounded-full border"
+                className="text-[6px] font-black uppercase tracking-wider px-1 py-px rounded-full border transition-all duration-300 group-hover:border-opacity-50"
                 style={{
                   color: pillar.color,
-                  borderColor: `${pillar.color}33`,
-                  backgroundColor: `${pillar.color}10`,
+                  borderColor: `${pillar.color}22`,
+                  backgroundColor: `${pillar.color}08`,
                 }}
               >
                 {pillar.status}
@@ -180,6 +202,13 @@ export function BorewellHealthIndex({ leakStatus = "Nominal" }: { leakStatus?: s
         </p>
         <span className="text-[9px] text-blue-400 font-mono font-bold uppercase flex-shrink-0">Live</span>
       </div>
+
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { transform: translateY(100%); }
+          100% { transform: translateY(-100%); }
+        }
+      `}</style>
     </div>
   )
 }

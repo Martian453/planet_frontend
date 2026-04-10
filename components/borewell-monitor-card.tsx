@@ -68,7 +68,7 @@ export function BorewellMonitorCard({
       </div>
 
       {/* MAIN CONTENT AREA WITH SLIDING WRAPPER */}
-      <div className="flex-1 relative mt-[9px] overflow-hidden">
+      <div className="flex-1 relative mt-1 min-h-0 overflow-hidden">
         <div 
           className="h-full w-full transition-all duration-500 ease-in-out"
           key={activeBorewellIndex}
@@ -77,7 +77,7 @@ export function BorewellMonitorCard({
           }}
         >
           {isMotorOn ? (
-            <div className="min-h-[105px] grid grid-cols-2 lg:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 h-full">
               {/* BOX 1: FLOW */}
               <div className="flex flex-col justify-between rounded-[20px] bg-[#0f1522] border border-white/5 p-3 relative overflow-hidden">
                 <div className="flex items-start justify-between">
@@ -134,7 +134,7 @@ export function BorewellMonitorCard({
             </div>
           ) : (
             /* STANDBY STATE */
-            <div className="h-full w-full flex flex-col items-center justify-center rounded-[20px] border border-white/5 bg-slate-900/40 backdrop-blur-md min-h-[105px]">
+            <div className="h-full w-full flex flex-col items-center justify-center rounded-[20px] border border-white/5 bg-slate-900/40 backdrop-blur-md">
               <div className="relative mb-2">
                 <div className="absolute inset-0 bg-slate-700/20 blur-xl rounded-full" />
                 <Activity className="h-6 w-6 text-slate-600 relative animate-pulse" />
@@ -149,7 +149,7 @@ export function BorewellMonitorCard({
       </div>
 
       {/* BOREWELL SELECTOR TABS - SLEEK VERSION */}
-      <div className="mt-5 px-1">
+      <div className="mt-auto pt-4 px-1">
         <div className="relative h-[22px] w-full rounded-full bg-white/[0.03] border border-white/[0.05] p-1 flex items-center overflow-hidden backdrop-blur-sm group/nav">
           {/* Sliding Glow Indicator */}
           <div 
